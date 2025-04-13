@@ -3,58 +3,119 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Route 593 - Pide tu Taxi</title>
+  <title>Route 593 - Tu Taxi de Confianza</title>
+  <link rel="manifest" href="manifest.json" />
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f9;
       margin: 0;
       padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
+      background: linear-gradient(135deg, #FFD700, #FF8C00);
+      font-family: 'Arial', sans-serif;
       text-align: center;
+      color: #fff;
     }
-    h1 {
-      color: #333;
+
+    header {
+      padding: 30px 20px 10px;
     }
-    p {
-      margin-bottom: 20px;
-      color: #555;
+
+    header h1 {
+      margin: 0;
+      font-size: 2em;
     }
+
+    .content {
+      padding: 20px;
+    }
+
+    .content p {
+      font-size: 1.2em;
+      margin-bottom: 30px;
+    }
+
     button {
       background-color: #25D366;
-      color: white;
       border: none;
       padding: 15px 30px;
-      border-radius: 10px;
-      font-size: 16px;
+      border-radius: 30px;
+      color: white;
+      font-size: 1.2em;
       cursor: pointer;
-      transition: background 0.3s;
+      transition: background-color 0.3s ease;
     }
+
     button:hover {
       background-color: #128C7E;
+    }
+
+    footer {
+      margin-top: 40px;
+      font-size: 0.9em;
+    }
+
+    .app-install {
+      margin-top: 20px;
+      font-size: 1em;
+      color: #fff;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    /* Icono taxi */
+    .icon-taxi {
+      font-size: 50px;
+      margin-bottom: 20px;
     }
   </style>
 </head>
 <body>
-  <h1>Bienvenido a Route 593</h1>
-  <p>Tu taxi confiable al instante</p>
-  <button onclick="pedirTaxi()">Pedir Taxi por WhatsApp</button>
+  <header>
+    <div class="icon-taxi">🚖</div>
+    <h1>Route 593</h1>
+    <p>Tu taxi rápido y seguro</p>
+  </header>
+
+  <div class="content">
+    <p>Haz tu pedido de taxi directo por WhatsApp.</p>
+    <button onclick="pedirTaxi()">Pedir Taxi por WhatsApp</button>
+
+    <div class="app-install" id="installApp" style="display: none;">
+      Instalar Route 593 en tu dispositivo
+    </div>
+  </div>
+
+  <footer>
+    &copy; 2025 Route 593. Todos los derechos reservados.
+  </footer>
 
   <script>
     function pedirTaxi() {
-      // Mensaje que se enviará por WhatsApp
-      const mensaje = encodeURIComponent("Hola, quiero pedir un taxi con Route 593. ¿Me ayudas?");
-      
-      // Tu número de WhatsApp (incluye el código de país, por ejemplo: 593XXXXXXXXX)
-      const numero = "593999034055"; // <-- Cambia esto por tu número real
-      
-      // Redirecciona a WhatsApp
-      window.location.href = `https://wa.me/${numero}?text=${mensaje}`;
+      const numero = "593999034055"; // Reemplaza con tu número real
+      const mensaje = encodeURIComponent("¡Hola! Quiero pedir un taxi de Route 593.");
+      window.open(`https://wa.me/${numero}?text=${mensaje}`, "_blank");
     }
+
+    // PWA - Instalación como App
+    let deferredPrompt;
+    const installApp = document.getElementById('installApp');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installApp.style.display = 'block';
+    });
+
+    installApp.addEventListener('click', () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('User accepted the install prompt');
+          }
+          deferredPrompt = null;
+        });
+      }
+    });
   </script>
 </body>
 </html>
