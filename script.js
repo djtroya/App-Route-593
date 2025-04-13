@@ -1,20 +1,14 @@
-async function enviarSolicitud() {
+function enviarSolicitud() {
   const ubicacion = document.getElementById('ubicacion').value;
   const destino = document.getElementById('destino').value;
 
-  const respuesta = document.getElementById('respuesta');
-  respuesta.textContent = "Procesando tu solicitud...";
-
-  try {
-    const res = await fetch('/.netlify/functions/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ubicacion, destino })
-    });
-
-    const data = await res.json();
-    respuesta.textContent = data.respuesta;
-  } catch (error) {
-    respuesta.textContent = "Error al procesar la solicitud.";
+  if (!ubicacion || !destino) {
+    alert('Por favor, completa ambos campos.');
+    return;
   }
+
+  // Mostrar mensaje de prueba
+  document.getElementById('respuesta').innerText = `Solicitud enviada: desde "${ubicacion}" hasta "${destino}".`;
+
+  // Aquí luego conectaremos la API
 }
