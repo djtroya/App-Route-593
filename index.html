@@ -12,8 +12,25 @@
   <div class="container">
     <h1>Route 593 - Pide tu taxi</h1>
     <input type="text" id="nombre" placeholder="Tu nombre" />
-    <input type="text" id="ubicacion" placeholder="Ubicación actual" />
-    <input type="text" id="destino" placeholder="Destino" />
+    
+    <input type="text" id="ubicacion" list="ubicaciones" placeholder="Ubicación actual" />
+    <datalist id="ubicaciones">
+      <option value="Centro de la ciudad">
+      <option value="Aeropuerto">
+      <option value="Terminal de buses">
+      <option value="Hospital Central">
+      <option value="Plaza Principal">
+    </datalist>
+    
+    <input type="text" id="destino" list="destinos" placeholder="Destino" />
+    <datalist id="destinos">
+      <option value="Centro de la ciudad">
+      <option value="Aeropuerto">
+      <option value="Terminal de buses">
+      <option value="Hospital Central">
+      <option value="Plaza Principal">
+    </datalist>
+
     <button onclick="enviarSolicitud()">Enviar solicitud</button>
     <div id="respuesta"></div>
   </div>
@@ -26,6 +43,30 @@
         .then(reg => console.log('Service Worker registrado', reg))
         .catch(err => console.error('Error al registrar Service Worker:', err));
     }
+
+    // Geolocalización automática para "Ubicación actual"
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(position => {
+        const { latitude, longitude } = position.coords;
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
+          .then(response => response.json())
+          .then(data => {
+            document.getElementById('ubicacion').value = data.address.road + ', ' + data.address.city;
+          })
+          .catch(error => console.error('Error al obtener dirección:', error));
+      }, error => {
+        console.warn('Geolocalización no permitida o fallida.', error);
+      });
+    }
+
+    // Opcional: sugerencias dinámicas (podemos expandir esto después)
+    const destinosExtras = ['Estadio Nacional', 'Universidad Central', 'Parque Industrial'];
+    const datalistDestinos = document.getElementById('destinos');
+    destinosExtras.forEach(destino => {
+      const option = document.createElement('option');
+      option.value = destino;
+      datalistDestinos.appendChild(option);
+    });
   </script>
 </body>
 </html>
