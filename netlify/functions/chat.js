@@ -5,7 +5,7 @@ exports.handler = async function(event) {
 
   const mensaje = `Hola, soy un cliente. Estoy en ${ubicacion} y quiero ir a ${destino}. ¿Hay unidades disponibles?`;
 
-  const apiKey = process.env.OPENAI_API_KEY; // <- Aquí pones tu API Key
+  const apiKey = process.env.WA_API_KEY; // <- Aquí pones tu API Key
 
   try {
     const respuesta = await fetch('https://api.openai.com/v1/chat/completions', {
