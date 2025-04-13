@@ -11,6 +11,7 @@
 <body>
   <div class="container">
     <h1>Route 593 - Pide tu taxi</h1>
+
     <input type="text" id="nombre" placeholder="Tu nombre" />
     
     <input type="text" id="ubicacion" list="ubicaciones" placeholder="Ubicación actual" />
@@ -36,6 +37,7 @@
   </div>
 
   <script src="script.js"></script>
+
   <script>
     // Registro del Service Worker
     if ('serviceWorker' in navigator) {
@@ -44,14 +46,15 @@
         .catch(err => console.error('Error al registrar Service Worker:', err));
     }
 
-    // Geolocalización automática para "Ubicación actual"
+    // Geolocalización automática
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(position => {
         const { latitude, longitude } = position.coords;
         fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
           .then(response => response.json())
           .then(data => {
-            document.getElementById('ubicacion').value = data.address.road + ', ' + data.address.city;
+            const ubicacion = data.address.road || data.display_name;
+            document.getElementById('ubicacion').value = ubicacion;
           })
           .catch(error => console.error('Error al obtener dirección:', error));
       }, error => {
@@ -59,13 +62,22 @@
       });
     }
 
-    // Opcional: sugerencias dinámicas (podemos expandir esto después)
+    // Sugerencias dinámicas para destinos
     const destinosExtras = ['Estadio Nacional', 'Universidad Central', 'Parque Industrial'];
     const datalistDestinos = document.getElementById('destinos');
     destinosExtras.forEach(destino => {
       const option = document.createElement('option');
       option.value = destino;
       datalistDestinos.appendChild(option);
+    });
+
+    // Opcional: guardado local de ubicaciones personalizadas
+    const ubicacionesExtras = ['Hotel Ruta 593', 'Puerto Marítimo', 'Zona Franca'];
+    const datalistUbicaciones = document.getElementById('ubicaciones');
+    ubicacionesExtras.forEach(ubicacion => {
+      const option = document.createElement('option');
+      option.value = ubicacion;
+      datalistUbicaciones.appendChild(option);
     });
   </script>
 </body>
