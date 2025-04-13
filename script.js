@@ -9,7 +9,7 @@ function enviarSolicitud() {
 
   document.getElementById('respuesta').innerText = 'Procesando solicitud...';
 
-  fetch('/.netlify/functions/solicitud', {
+  fetch('/.netlify/functions/chat', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
