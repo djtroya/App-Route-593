@@ -3,99 +3,89 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Route 593 - Pide tu taxi</title>
-  <link rel="manifest" href="manifest.json" />
+  <title>Route 593 - Prueba App</title>
   <style>
     body {
-      margin: 0;
       font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #ffaf00, #ff7300);
-      color: #fff;
       text-align: center;
-      padding: 50px 20px;
+      padding: 20px;
+      background: #f7f7f7;
     }
-
     h1 {
-      margin-bottom: 20px;
+      color: #333;
     }
-
-    input {
+    input, textarea, button {
+      width: 90%;
       padding: 10px;
+      margin: 10px 0;
       border-radius: 8px;
-      border: none;
-      width: 80%;
-      margin-bottom: 10px;
-    }
-
-    button {
-      background: #fff;
-      color: #ff7300;
-      border: none;
-      padding: 15px 30px;
-      border-radius: 8px;
-      cursor: pointer;
+      border: 1px solid #ccc;
       font-size: 16px;
-      margin-top: 10px;
     }
-
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+    }
     button:hover {
-      background: #ffe0b3;
+      background-color: #45a049;
     }
-
-    .app-install {
+    .respuesta {
       margin-top: 20px;
-      font-size: 14px;
-      background: rgba(255, 255, 255, 0.2);
-      padding: 10px;
+      padding: 15px;
+      background: white;
       border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
   </style>
 </head>
 <body>
-  <h1>Route 593 - Tu taxi rápido</h1>
+  <h1>Route 593</h1>
+  <p>Ingresa tu ubicación y destino:</p>
+  <input type="text" id="ubicacion" placeholder="Ubicación actual" />
+  <input type="text" id="destino" placeholder="Destino" />
+  <button onclick="enviarSolicitud()">Enviar Solicitud</button>
 
-  <p>Solicita tu taxi directo por WhatsApp:</p>
-
-  <input type="text" id="ubicacion" placeholder="Tu ubicación actual" /><br>
-  <input type="text" id="destino" placeholder="Destino" /><br>
-
-  <button onclick="pedirTaxi()">Pedir Taxi por WhatsApp</button>
-
-  <div class="app-install" id="installApp" style="display: none;">
-    Instalar Route 593 en tu dispositivo
-  </div>
+  <div class="respuesta" id="respuesta"></div>
 
   <script>
-    function pedirTaxi() {
-      const numero = "593999034055"; // <--- Reemplaza con tu número real
-      const ubicacion = document.getElementById("ubicacion").value;
-      const destino = document.getElementById("destino").value;
+    async function enviarSolicitud() {
+      const ubicacion = document.getElementById('ubicacion').value;
+      const destino = document.getElementById('destino').value;
+      const respuestaDiv = document.getElementById('respuesta');
+      
+      respuestaDiv.innerHTML = "Procesando solicitud...";
 
-      if (!ubicacion || !destino) {
-        alert("Por favor, completa la ubicación y el destino.");
-        return;
+      try {
+        const apiKey = 'AQUÍ_PEGAS_TU_API_KEY'; // <-- Aquí pegas tu API key
+
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o',
+            messages: [{
+              role: 'system',
+              content: 'Eres un asistente de servicio de taxi llamado Route 593. Responde de forma clara y amigable a los clientes que indican su ubicación y destino, informándoles que procesaremos su viaje y les daremos seguimiento por WhatsApp.'
+            }, {
+              role: 'user',
+              content: `Ubicación: ${ubicacion}, Destino: ${destino}`
+            }]
+          })
+        });
+
+        const data = await response.json();
+        const mensaje = data.choices[0].message.content;
+
+        respuestaDiv.innerHTML = mensaje;
+      } catch (error) {
+        console.error(error);
+        respuestaDiv.innerHTML = "Hubo un error al procesar la solicitud. Intenta de nuevo.";
       }
-
-      const mensaje = encodeURIComponent(
-        `¡Hola! Quiero pedir un taxi de Route 593.\n\nUbicación: ${ubicacion}\nDestino: ${destino}`
-      );
-
-      window.open(`https://wa.me/${numero}?text=${mensaje}`, "_blank");
     }
-
-    // Detectar instalación PWA
-    let deferredPrompt;
-    window.addEventListener("beforeinstallprompt", (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      document.getElementById("installApp").style.display = "block";
-    });
-
-    document.getElementById("installApp").addEventListener("click", () => {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-      }
-    });
   </script>
 </body>
 </html>
