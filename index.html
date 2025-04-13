@@ -3,117 +3,97 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Route 593 - Tu Taxi de Confianza</title>
+  <title>Route 593 - Pide tu taxi</title>
   <link rel="manifest" href="manifest.json" />
   <style>
     body {
       margin: 0;
-      padding: 0;
-      background: linear-gradient(135deg, #FFD700, #FF8C00);
-      font-family: 'Arial', sans-serif;
-      text-align: center;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #ffaf00, #ff7300);
       color: #fff;
+      text-align: center;
+      padding: 50px 20px;
     }
 
-    header {
-      padding: 30px 20px 10px;
+    h1 {
+      margin-bottom: 20px;
     }
 
-    header h1 {
-      margin: 0;
-      font-size: 2em;
-    }
-
-    .content {
-      padding: 20px;
-    }
-
-    .content p {
-      font-size: 1.2em;
-      margin-bottom: 30px;
+    input {
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      width: 80%;
+      margin-bottom: 10px;
     }
 
     button {
-      background-color: #25D366;
+      background: #fff;
+      color: #ff7300;
       border: none;
       padding: 15px 30px;
-      border-radius: 30px;
-      color: white;
-      font-size: 1.2em;
+      border-radius: 8px;
       cursor: pointer;
-      transition: background-color 0.3s ease;
+      font-size: 16px;
+      margin-top: 10px;
     }
 
     button:hover {
-      background-color: #128C7E;
-    }
-
-    footer {
-      margin-top: 40px;
-      font-size: 0.9em;
+      background: #ffe0b3;
     }
 
     .app-install {
       margin-top: 20px;
-      font-size: 1em;
-      color: #fff;
-      text-decoration: underline;
-      cursor: pointer;
-    }
-
-    /* Icono taxi */
-    .icon-taxi {
-      font-size: 50px;
-      margin-bottom: 20px;
+      font-size: 14px;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 10px;
+      border-radius: 8px;
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="icon-taxi">🚖</div>
-    <h1>Route 593</h1>
-    <p>Tu taxi rápido y seguro</p>
-  </header>
+  <h1>Route 593 - Tu taxi rápido</h1>
 
-  <div class="content">
-    <p>Haz tu pedido de taxi directo por WhatsApp.</p>
-    <button onclick="pedirTaxi()">Pedir Taxi por WhatsApp</button>
+  <p>Solicita tu taxi directo por WhatsApp:</p>
 
-    <div class="app-install" id="installApp" style="display: none;">
-      Instalar Route 593 en tu dispositivo
-    </div>
+  <input type="text" id="ubicacion" placeholder="Tu ubicación actual" /><br>
+  <input type="text" id="destino" placeholder="Destino" /><br>
+
+  <button onclick="pedirTaxi()">Pedir Taxi por WhatsApp</button>
+
+  <div class="app-install" id="installApp" style="display: none;">
+    Instalar Route 593 en tu dispositivo
   </div>
-
-  <footer>
-    &copy; 2025 Route 593. Todos los derechos reservados.
-  </footer>
 
   <script>
     function pedirTaxi() {
-      const numero = "593999034055"; // Reemplaza con tu número real
-      const mensaje = encodeURIComponent("¡Hola! Quiero pedir un taxi de Route 593.");
+      const numero = "593999034055"; // <--- Reemplaza con tu número real
+      const ubicacion = document.getElementById("ubicacion").value;
+      const destino = document.getElementById("destino").value;
+
+      if (!ubicacion || !destino) {
+        alert("Por favor, completa la ubicación y el destino.");
+        return;
+      }
+
+      const mensaje = encodeURIComponent(
+        `¡Hola! Quiero pedir un taxi de Route 593.\n\nUbicación: ${ubicacion}\nDestino: ${destino}`
+      );
+
       window.open(`https://wa.me/${numero}?text=${mensaje}`, "_blank");
     }
 
-    // PWA - Instalación como App
+    // Detectar instalación PWA
     let deferredPrompt;
-    const installApp = document.getElementById('installApp');
-
-    window.addEventListener('beforeinstallprompt', (e) => {
+    window.addEventListener("beforeinstallprompt", (e) => {
       e.preventDefault();
       deferredPrompt = e;
-      installApp.style.display = 'block';
+      document.getElementById("installApp").style.display = "block";
     });
 
-    installApp.addEventListener('click', () => {
+    document.getElementById("installApp").addEventListener("click", () => {
       if (deferredPrompt) {
         deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choiceResult) => {
-          if (choiceResult.outcome === 'accepted') {
-            console.log('User accepted the install prompt');
-          }
-          deferredPrompt = null;
-        });
       }
     });
   </script>
