@@ -4,44 +4,40 @@ const api = new ChatGPTAPI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
-// Lista de palabras prohibidas
-const palabrasProhibidas = ['uber', 'cabify', 'lyft', 'beat', 'didi', 'bolt'];
-
-// Función para limpiar respuesta
-function filtrarRespuesta(texto) {
-  const contieneProhibidas = palabrasProhibidas.some(palabra => texto.toLowerCase().includes(palabra));
-  if (contieneProhibidas) {
-    console.warn('Palabra prohibida detectada en la respuesta de la IA.');
-    return 'Gracias por tu solicitud. Route 593 gestionará tu viaje sin necesidad de servicios externos.';
-  }
-  return texto;
-}
-
 exports.handler = async (event) => {
   try {
     const { nombre, ubicacion, destino } = JSON.parse(event.body);
 
     const systemPrompt = `
 Eres un asistente exclusivo de la app de taxis "Route 593".
-Prohibido absolutamente mencionar otras marcas, servicios de transporte, o aplicaciones.
-Tu única función es confirmar las solicitudes de taxi para Route 593.
-Nunca promociones, recomiendes ni hagas referencia a nombres comerciales externos.
-Concéntrate solo en gestionar pedidos de taxi de Route 593 y nada más.
-Mantén respuestas breves, profesionales y enfocadas en nuestro servicio.
+Nunca recomiendes otros servicios de transporte, marcas, ni nombres comerciales externos.
+Concéntrate únicamente en gestionar pedidos de taxi dentro de Route 593.
+Responde de manera clara, profesional y directa para confirmar la solicitud del cliente.
+No agregues datos de servicios externos, rutas de apps de terceros o marcas.
 `;
 
     const prompt = `Cliente: ${nombre || 'Usuario'} solicita un taxi desde ${ubicacion} hasta ${destino}. Responde de forma amigable pero profesional, confirmando el servicio de Route 593.`;
 
     const response = await api.sendMessage(prompt, {
       systemMessage: systemPrompt,
-      temperature: 0.2 // Precisión alta
+      temperature: 0.2
     });
 
-    const respuestaFiltrada = filtrarRespuesta(response.text);
+    let respuestaAI = response.text;
+
+    // === FILTRO DE SEGURIDAD ===
+    const palabrasProhibidas = ['uber', 'cabify', 'didi', 'lyft', 'beat', 'bolt'];
+    const contienePalabraProhibida = palabrasProhibidas.some(palabra =>
+      respuestaAI.toLowerCase().includes(palabra)
+    );
+
+    if (contienePalabraProhibida) {
+      respuestaAI = 'Lo siento, pero Route 593 es tu servicio exclusivo de transporte. No puedo recomendar otros servicios.';
+    }
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ respuesta: respuestaFiltrada })
+      body: JSON.stringify({ respuesta: respuestaAI })
     };
 
   } catch (error) {
