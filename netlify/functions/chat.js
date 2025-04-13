@@ -4,6 +4,24 @@ const api = new ChatGPTAPI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
+// Lista de palabras prohibidas que no queremos que aparezcan jamás
+const palabrasProhibidas = ['uber', 'didi', 'cabify', 'inDrive', 'bolt', 'lyft', 'cab', 'taxify', 'beat'];
+
+// Función para revisar la respuesta y limpiar si detecta menciones no deseadas
+function limpiarRespuesta(respuestaOriginal, nombre, ubicacion, destino) {
+  const respuestaLimpia = respuestaOriginal.toLowerCase();
+
+  const contienePalabraProhibida = palabrasProhibidas.some(palabra =>
+    respuestaLimpia.includes(palabra)
+  );
+
+  if (contienePalabraProhibida) {
+    return `¡Perfecto, ${nombre || 'usuario'}! Route 593 está procesando tu solicitud desde ${ubicacion} hasta ${destino}. Te contactaremos en breve para confirmarte la unidad disponible.`;
+  }
+
+  return respuestaOriginal;
+}
+
 exports.handler = async (event) => {
   try {
     const { nombre, ubicacion, destino } = JSON.parse(event.body);
@@ -23,21 +41,11 @@ No agregues datos de servicios externos, rutas de apps de terceros o marcas.
       temperature: 0.2
     });
 
-    let respuestaAI = response.text;
-
-    // === FILTRO DE SEGURIDAD ===
-    const palabrasProhibidas = ['uber', 'cabify', 'didi', 'lyft', 'beat', 'bolt'];
-    const contienePalabraProhibida = palabrasProhibidas.some(palabra =>
-      respuestaAI.toLowerCase().includes(palabra)
-    );
-
-    if (contienePalabraProhibida) {
-      respuestaAI = 'Lo siento, pero Route 593 es tu servicio exclusivo de transporte. No puedo recomendar otros servicios.';
-    }
+    const respuestaFinal = limpiarRespuesta(response.text, nombre, ubicacion, destino);
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ respuesta: respuestaAI })
+      body: JSON.stringify({ respuesta: respuestaFinal })
     };
 
   } catch (error) {
