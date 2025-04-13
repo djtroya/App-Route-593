@@ -1,0 +1,9 @@
+{
+  "name": "route593",
+  "version": "1.0.0",
+  "description": "Proyecto para Route 593",
+  "main": "index.js",
+  "dependencies": {
+    "node-fetch": "^2.6.9"
+  }
+}
