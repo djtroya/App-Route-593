@@ -5,7 +5,7 @@ exports.handler = async function(event) {
 
   const mensaje = `Hola, soy un cliente. Estoy en ${ubicacion} y quiero ir a ${destino}. ¿Hay unidades disponibles?`;
 
-  const apiKey = process.env.WA_API_KEY; // <- Aquí pones tu API Key
+  const apiKey = process.env.WA_API_KEY; // <- Corrección aquí
 
   try {
     const respuesta = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -21,7 +21,7 @@ exports.handler = async function(event) {
     });
 
     const data = await respuesta.json();
-    const respuestaTexto = data.choices[0].message.content;
+    const respuestaTexto = data.choices?.[0]?.message?.content || 'La IA no devolvió una respuesta válida.';
 
     return {
       statusCode: 200,
