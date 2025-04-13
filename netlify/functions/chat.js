@@ -1,55 +1,38 @@
-const fetch = require('node-fetch');
+const { ChatGPTAPI } = require('chatgpt');
 
-exports.handler = async function(event) {
-  const { ubicacion, destino } = JSON.parse(event.body);
+const api = new ChatGPTAPI({
+  apiKey: process.env.OPENAI_API_KEY
+});
 
-  const mensaje = `Hola, soy un cliente. Estoy en ${ubicacion} y quiero ir a ${destino}. ¿Hay unidades disponibles?`;
-
-  const apiKey = process.env.OPENAI_API_KEY;
-
-  // Verificamos que la API Key esté definida
-  if (!apiKey) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ respuesta: 'La API Key no está configurada en las variables de entorno.' })
-    };
-  }
-
+exports.handler = async (event) => {
   try {
-    const respuesta = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [{ role: 'user', content: mensaje }]
-      })
+    const { nombre, ubicacion, destino } = JSON.parse(event.body);
+
+    const systemPrompt = `
+Eres un asistente exclusivo de la app de taxis "Route 593".
+Nunca recomiendes otros servicios de transporte, marcas, ni nombres comerciales externos.
+Concéntrate únicamente en gestionar pedidos de taxi dentro de Route 593.
+Responde de manera clara, profesional y directa para confirmar la solicitud del cliente.
+No agregues datos de servicios externos, rutas de apps de terceros o marcas.
+`;
+
+    const prompt = `Cliente: ${nombre || 'Usuario'} solicita un taxi desde ${ubicacion} hasta ${destino}. Responde de forma amigable pero profesional, confirmando el servicio de Route 593.`;
+
+    const response = await api.sendMessage(prompt, {
+      systemMessage: systemPrompt,
+      temperature: 0.2 // Baja temperatura para respuestas más precisas
     });
-
-    const data = await respuesta.json();
-
-    // Verificamos si la respuesta fue exitosa
-    if (!respuesta.ok) {
-      console.error('Error de OpenAI:', data);
-      return {
-        statusCode: 500,
-        body: JSON.stringify({ respuesta: `Error de OpenAI: ${data.error?.message || 'Respuesta no válida.'}` })
-      };
-    }
-
-    const respuestaTexto = data.choices?.[0]?.message?.content || 'La IA no devolvió una respuesta válida.';
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ respuesta: respuestaTexto })
+      body: JSON.stringify({ respuesta: response.text })
     };
+
   } catch (error) {
-    console.error('Error general:', error);
+    console.error('Error al procesar la solicitud:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ respuesta: 'Error al contactar con la IA.' })
+      body: JSON.stringify({ respuesta: 'Error al procesar la solicitud.' })
     };
   }
 };
