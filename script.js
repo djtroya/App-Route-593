@@ -1,9 +1,10 @@
 function enviarSolicitud() {
+  const nombre = document.getElementById('nombre').value;
   const ubicacion = document.getElementById('ubicacion').value;
   const destino = document.getElementById('destino').value;
 
-  if (!ubicacion || !destino) {
-    alert('Por favor, completa ambos campos.');
+  if (!nombre || !ubicacion || !destino) {
+    alert('Por favor, completa todos los campos.');
     return;
   }
 
@@ -14,7 +15,7 @@ function enviarSolicitud() {
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ ubicacion, destino })
+    body: JSON.stringify({ nombre, ubicacion, destino })
   })
   .then(response => {
     if (!response.ok) {
