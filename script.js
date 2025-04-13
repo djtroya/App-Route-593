@@ -7,10 +7,8 @@ function enviarSolicitud() {
     return;
   }
 
-  // Mostrar mensaje de carga
   document.getElementById('respuesta').innerText = 'Procesando solicitud...';
 
-  // Enviar la solicitud a la función serverless
   fetch('/.netlify/functions/solicitud', {
     method: 'POST',
     headers: {
@@ -18,9 +16,18 @@ function enviarSolicitud() {
     },
     body: JSON.stringify({ ubicacion, destino })
   })
-  .then(response => response.json())
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Error en la respuesta del servidor');
+    }
+    return response.json();
+  })
   .then(data => {
-    document.getElementById('respuesta').innerText = data.respuesta;
+    if (data.respuesta) {
+      document.getElementById('respuesta').innerText = data.respuesta;
+    } else {
+      document.getElementById('respuesta').innerText = 'No se recibió una respuesta válida de la IA.';
+    }
   })
   .catch(error => {
     console.error('Error:', error);
