@@ -1,4 +1,4 @@
-const { ChatGPTAPI } = require('chatgpt');
+import { ChatGPTAPI } from 'chatgpt';
 
 const api = new ChatGPTAPI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -9,13 +9,13 @@ const api = new ChatGPTAPI({
 
 const palabrasProhibidas = ['uber', 'didi', 'cabify', 'inDrive', 'bolt', 'lyft', 'cab', 'taxify', 'beat'];
 
-exports.handler = async (event) => {
+export async function handler(event) {
   try {
     const { pregunta } = JSON.parse(event.body);
 
     const systemPrompt = `
 Eres el asistente exclusivo de la app de taxis Route 593.
-Nunca menciones servicios de transporte de la competencia ni nombres de marcas externas.
+Nunca menciones servicios de la competencia ni nombres de marcas externas.
 Concéntrate en responder de forma clara, profesional y directa sobre Route 593.
 `;
 
@@ -34,14 +34,14 @@ Concéntrate en responder de forma clara, profesional y directa sobre Route 593.
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ data: { message: respuesta } }) // <- CORREGIDO
+      body: JSON.stringify({ data: { message: respuesta } })
     };
 
   } catch (error) {
     console.error('Error:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ data: { message: 'Hubo un error al procesar tu solicitud.' } }) // <- CORREGIDO
+      body: JSON.stringify({ data: { message: 'Hubo un error al procesar tu solicitud.' } })
     };
   }
-};
+}
