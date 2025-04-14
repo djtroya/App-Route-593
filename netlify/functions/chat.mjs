@@ -11,7 +11,7 @@ const api = new ChatGPTAPI({
 // Lista de palabras prohibidas
 const palabrasProhibidas = ['uber', 'didi', 'cabify', 'inDrive', 'bolt', 'lyft', 'cab', 'taxify', 'beat'];
 
-export async function handler(event) {
+export const handler = async (event) => {
   try {
     const { pregunta } = JSON.parse(event.body);
 
@@ -47,4 +47,4 @@ Concéntrate en responder de forma clara, profesional y directa sobre Route 593.
       body: JSON.stringify({ data: { message: 'Hubo un error al procesar tu solicitud.' } })
     };
   }
-}
+};
