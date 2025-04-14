@@ -1,10 +1,12 @@
 {
-  "name": "route593",
+  "name": "route593-functions",
   "version": "1.0.0",
-  "description": "Proyecto para Route 593",
-  "main": "index.js",
+  "description": "Funciones serverless para Route 593",
+  "main": "responder.js",
+  "scripts": {
+    "start": "netlify dev"
+  },
   "dependencies": {
-    "node-fetch": "^2.6.9",
     "chatgpt": "^5.2.4"
   }
 }
