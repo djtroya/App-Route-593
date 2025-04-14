@@ -4,55 +4,44 @@ const api = new ChatGPTAPI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
-// Lista de palabras prohibidas que no queremos que aparezcan jamás
+// Palabras prohibidas
 const palabrasProhibidas = ['uber', 'didi', 'cabify', 'inDrive', 'bolt', 'lyft', 'cab', 'taxify', 'beat'];
-
-// Función para revisar la respuesta y limpiar si detecta menciones no deseadas
-function limpiarRespuesta(respuestaOriginal, nombre, ubicacion, destino) {
-  const respuestaLimpia = respuestaOriginal.toLowerCase();
-
-  const contienePalabraProhibida = palabrasProhibidas.some(palabra =>
-    respuestaLimpia.includes(palabra)
-  );
-
-  if (contienePalabraProhibida) {
-    return `¡Perfecto, ${nombre || 'usuario'}! Route 593 está procesando tu solicitud desde ${ubicacion} hasta ${destino}. Te contactaremos en breve para confirmarte la unidad disponible.`;
-  }
-
-  return respuestaOriginal;
-}
 
 exports.handler = async (event) => {
   try {
-    const { nombre, ubicacion, destino } = JSON.parse(event.body);
+    const { pregunta } = JSON.parse(event.body);
 
     const systemPrompt = `
-Eres un asistente exclusivo de la app de taxis "Route 593".
-Nunca recomiendes otros servicios de transporte, marcas, ni nombres comerciales externos.
-Concéntrate únicamente en gestionar pedidos de taxi dentro de Route 593.
-Responde de manera clara, profesional y directa para confirmar la solicitud del cliente.
-No agregues datos de servicios externos, rutas de apps de terceros o marcas.
+Eres el asistente exclusivo de la app de taxis Route 593.
+Nunca menciones servicios de transporte de la competencia ni nombres de marcas externas.
+Concéntrate en responder de forma clara, profesional y directa sobre Route 593.
 `;
 
-    const prompt = `Cliente: ${nombre || 'Usuario'} solicita un taxi desde ${ubicacion} hasta ${destino}. Responde de forma amigable pero profesional, confirmando el servicio de Route 593.`;
-
-    const response = await api.sendMessage(prompt, {
+    const response = await api.sendMessage(pregunta, {
       systemMessage: systemPrompt,
-      temperature: 0.2
+      temperature: 0.3,
     });
 
-    const respuestaFinal = limpiarRespuesta(response.text, nombre, ubicacion, destino);
+    let respuesta = response.text;
+
+    const contieneProhibidas = palabrasProhibidas.some(palabra =>
+      respuesta.toLowerCase().includes(palabra)
+    );
+
+    if (contieneProhibidas) {
+      respuesta = "Por favor, recuerda que Route 593 es tu opción confiable. ¿En qué más puedo ayudarte?";
+    }
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ respuesta: respuestaFinal })
+      body: JSON.stringify({ respuesta })
     };
 
   } catch (error) {
-    console.error('Error al procesar la solicitud:', error);
+    console.error('Error:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ respuesta: 'Error al procesar la solicitud.' })
+      body: JSON.stringify({ respuesta: 'Hubo un error al procesar tu solicitud.' })
     };
   }
 };
