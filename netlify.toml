@@ -1,10 +1,7 @@
 [build]
   functions = "netlify/functions"
+  environment = { NODE_VERSION = "18" }
 
 [functions]
   node_bundler = "esbuild"
-  external_node_modules = ["chatgpt"]
-  included_files = []
-
-[build.environment]
-  NODE_VERSION = "18"
+  external_node_modules = ["node-fetch"]
