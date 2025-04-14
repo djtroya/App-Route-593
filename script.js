@@ -1,38 +1,42 @@
-async function enviarMensaje() {
-  const input = document.getElementById('user-input');
-  const mensaje = input.value.trim();
-  if (!mensaje) return;
+const chatWindow = document.getElementById('chat-window');
+const chatForm = document.getElementById('chat-form');
+const userInput = document.getElementById('user-input');
 
-  agregarMensaje(mensaje, 'usuario');
-  input.value = '';
+chatForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const message = userInput.value.trim();
+  if (!message) return;
+
+  appendMessage('user', message);
+  userInput.value = '';
+
+  appendMessage('bot', 'Pensando...');
 
   try {
-    const respuesta = await fetch('/.netlify/functions/chat', {
+    const response = await fetch('/.netlify/functions/chat', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ pregunta: mensaje })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message })
     });
 
-    const data = await respuesta.json();
-
-    if (data.respuesta) {
-      agregarMensaje(data.respuesta, 'bot');
-    } else {
-      agregarMensaje('La respuesta del servidor está vacía.', 'bot');
-    }
+    const data = await response.json();
+    updateLastBotMessage(data.reply);
   } catch (error) {
-    console.error('Error al enviar mensaje:', error);
-    agregarMensaje('Hubo un error al procesar tu solicitud.', 'bot');
+    updateLastBotMessage('Error al conectar con el servidor.');
+    console.error(error);
   }
+});
+
+function appendMessage(sender, text) {
+  const messageDiv = document.createElement('div');
+  messageDiv.classList.add('message', sender === 'user' ? 'user-message' : 'bot-message');
+  messageDiv.textContent = text;
+  chatWindow.appendChild(messageDiv);
+  chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 
-function agregarMensaje(texto, tipo) {
-  const chatBox = document.getElementById('chat-box');
-  const mensaje = document.createElement('div');
-  mensaje.className = tipo === 'bot' ? 'mensaje-bot' : 'mensaje-usuario';
-  mensaje.textContent = texto;
-  chatBox.appendChild(mensaje);
-  chatBox.scrollTop = chatBox.scrollHeight;
+function updateLastBotMessage(text) {
+  const messages = document.querySelectorAll('.bot-message');
+  const lastMessage = messages[messages.length - 1];
+  if (lastMessage) lastMessage.textContent = text;
 }
