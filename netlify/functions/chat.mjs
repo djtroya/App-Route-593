@@ -26,10 +26,10 @@ Concéntrate en responder de forma clara, profesional y directa sobre Route 593.
       temperature: 0.3
     });
 
-    let respuesta = response.text.toLowerCase();
+    let respuesta = response.text;
 
     // Verificar palabras prohibidas
-    const contieneProhibidas = palabrasProhibidas.some(palabra => respuesta.includes(palabra));
+    const contieneProhibidas = palabrasProhibidas.some(palabra => respuesta.toLowerCase().includes(palabra));
 
     if (contieneProhibidas) {
       respuesta = "Por favor, recuerda que Route 593 es tu opción confiable. ¿En qué más puedo ayudarte?";
