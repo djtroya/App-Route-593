@@ -1,37 +1,43 @@
 const fetch = require('node-fetch');
 
-exports.handler = async (event) => {
+exports.handler = async function (event) {
   try {
     const { message } = JSON.parse(event.body);
 
-    const apiKey = process.env.OPENAI_API_KEY;
-    const apiUrl = 'https://api.openai.com/v1/chat/completions';
-
-    const response = await fetch(apiUrl, {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-3.5-turbo',
         messages: [{ role: 'user', content: message }],
-        temperature: 0.7
-      })
+      }),
     });
 
+    if (!response.ok) {
+      const errorDetails = await response.text();
+      console.error('Error response from OpenAI:', errorDetails);
+      return {
+        statusCode: response.status,
+        body: JSON.stringify({ error: 'Error desde OpenAI', details: errorDetails }),
+      };
+    }
+
     const data = await response.json();
-    const reply = data.choices?.[0]?.message?.content || 'Sin respuesta.';
+    const reply = data.choices[0]?.message?.content || 'No hubo respuesta';
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ reply })
+      body: JSON.stringify({ reply }),
     };
+
   } catch (error) {
-    console.error('Error en la función:', error);
+    console.error('Server error:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ reply: 'Error interno del servidor.' })
+      body: JSON.stringify({ error: 'Error en el servidor', details: error.message }),
     };
   }
 };
