@@ -1,6 +1,10 @@
 [build]
   functions = "netlify/functions"
-  publish = "."
 
 [functions]
   node_bundler = "esbuild"
+  external_node_modules = ["chatgpt"]
+  included_files = []
+
+[build.environment]
+  NODE_VERSION = "18"
