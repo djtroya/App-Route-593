@@ -3,7 +3,7 @@ const { ChatGPTAPI } = require('chatgpt');
 const api = new ChatGPTAPI({
   apiKey: process.env.OPENAI_API_KEY,
   completionParams: {
-    model: 'gpt-4o-mini' // Modelo preferido
+    model: 'gpt-4o-mini'
   }
 });
 
@@ -34,14 +34,14 @@ Concéntrate en responder de forma clara, profesional y directa sobre Route 593.
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ message: respuesta }) // Aquí corregido
+      body: JSON.stringify({ data: { message: respuesta } }) // <- CORREGIDO
     };
 
   } catch (error) {
     console.error('Error:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: 'Hubo un error al procesar tu solicitud.' }) // También aquí por consistencia
+      body: JSON.stringify({ data: { message: 'Hubo un error al procesar tu solicitud.' } }) // <- CORREGIDO
     };
   }
 };
