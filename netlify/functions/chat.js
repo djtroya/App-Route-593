@@ -1,7 +1,10 @@
 const { ChatGPTAPI } = require('chatgpt');
 
 const api = new ChatGPTAPI({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.OPENAI_API_KEY,
+  completionParams: {
+    model: 'gpt-4o-mini' // Forzamos tu modelo favorito
+  }
 });
 
 const palabrasProhibidas = ['uber', 'didi', 'cabify', 'inDrive', 'bolt', 'lyft', 'cab', 'taxify', 'beat'];
