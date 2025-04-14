@@ -1,17 +1,15 @@
-import { ChatGPTAPI } from 'chatgpt';
-
-// Configura tu instancia de la API
-const api = new ChatGPTAPI({
-  apiKey: process.env.OPENAI_API_KEY,
-  completionParams: {
-    model: 'gpt-4o-mini'
-  }
-});
-
-// Lista de palabras prohibidas
-const palabrasProhibidas = ['uber', 'didi', 'cabify', 'inDrive', 'bolt', 'lyft', 'cab', 'taxify', 'beat'];
-
 export const handler = async (event) => {
+  const { ChatGPTAPI } = await import('chatgpt');
+
+  const api = new ChatGPTAPI({
+    apiKey: process.env.OPENAI_API_KEY,
+    completionParams: {
+      model: 'gpt-4o-mini'
+    }
+  });
+
+  const palabrasProhibidas = ['uber', 'didi', 'cabify', 'inDrive', 'bolt', 'lyft', 'cab', 'taxify', 'beat'];
+
   try {
     const { pregunta } = JSON.parse(event.body);
 
@@ -28,7 +26,6 @@ Concéntrate en responder de forma clara, profesional y directa sobre Route 593.
 
     let respuesta = response.text;
 
-    // Verificar palabras prohibidas
     const contieneProhibidas = palabrasProhibidas.some(palabra => respuesta.toLowerCase().includes(palabra));
 
     if (contieneProhibidas) {
