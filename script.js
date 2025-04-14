@@ -8,30 +8,9 @@ function enviarSolicitud() {
     return;
   }
 
-  document.getElementById('respuesta').innerText = 'Procesando solicitud...';
+  const numeroWhatsApp = '593987654321'; // Reemplaza con tu número real
+  const mensaje = `Hola, soy ${nombre}. Estoy en ${ubicacion} y quiero ir a ${destino}. Por favor, envíen un taxi. Gracias.`;
 
-  fetch('/.netlify/functions/chat', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ nombre, ubicacion, destino })
-  })
-  .then(response => {
-    if (!response.ok) {
-      throw new Error('Error en la respuesta del servidor');
-    }
-    return response.json();
-  })
-  .then(data => {
-    if (data.respuesta) {
-      document.getElementById('respuesta').innerText = data.respuesta;
-    } else {
-      document.getElementById('respuesta').innerText = 'No se recibió una respuesta válida de la IA.';
-    }
-  })
-  .catch(error => {
-    console.error('Error:', error);
-    document.getElementById('respuesta').innerText = 'Ocurrió un error al procesar la solicitud.';
-  });
+  const url = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensaje)}`;
+  window.open(url, '_blank');
 }
