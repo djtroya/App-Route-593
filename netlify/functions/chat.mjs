@@ -1,15 +1,15 @@
-export const handler = async (event) => {
-  const { ChatGPTAPI } = await import('chatgpt');
+import { ChatGPTAPI } from 'chatgpt';
 
-  const api = new ChatGPTAPI({
-    apiKey: process.env.OPENAI_API_KEY,
-    completionParams: {
-      model: 'gpt-4o-mini'
-    }
-  });
+const api = new ChatGPTAPI({
+  apiKey: process.env.OPENAI_API_KEY,
+  completionParams: {
+    model: 'gpt-4o-mini'
+  }
+});
 
-  const palabrasProhibidas = ['uber', 'didi', 'cabify', 'inDrive', 'bolt', 'lyft', 'cab', 'taxify', 'beat'];
+const palabrasProhibidas = ['uber', 'didi', 'cabify', 'inDrive', 'bolt', 'lyft', 'cab', 'taxify', 'beat'];
 
+export async function handler(event) {
   try {
     const { pregunta } = JSON.parse(event.body);
 
@@ -44,4 +44,4 @@ Concéntrate en responder de forma clara, profesional y directa sobre Route 593.
       body: JSON.stringify({ data: { message: 'Hubo un error al procesar tu solicitud.' } })
     };
   }
-};
+}
