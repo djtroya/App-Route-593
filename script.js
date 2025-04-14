@@ -9,12 +9,21 @@ async function enviarMensaje() {
   try {
     const respuesta = await fetch('/.netlify/functions/chat', {
       method: 'POST',
-      body: JSON.stringify({ pregunta: mensaje }),
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ pregunta: mensaje })
     });
 
     const data = await respuesta.json();
-    agregarMensaje(data.respuesta, 'bot');
+
+    if (data.respuesta) {
+      agregarMensaje(data.respuesta, 'bot');
+    } else {
+      agregarMensaje('La respuesta del servidor está vacía.', 'bot');
+    }
   } catch (error) {
+    console.error('Error al enviar mensaje:', error);
     agregarMensaje('Hubo un error al procesar tu solicitud.', 'bot');
   }
 }
