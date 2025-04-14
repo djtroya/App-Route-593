@@ -1,25 +1,29 @@
-function enviarSolicitud() {
-  const nombre = document.getElementById('nombre').value.trim();
-  const ubicacion = document.getElementById('ubicacion').value.trim();
-  const destino = document.getElementById('destino').value.trim();
+async function enviarMensaje() {
+  const input = document.getElementById('user-input');
+  const mensaje = input.value.trim();
+  if (!mensaje) return;
 
-  if (!nombre || !ubicacion || !destino) {
-    alert('Por favor, completa todos los campos.');
-    return;
+  agregarMensaje(mensaje, 'usuario');
+  input.value = '';
+
+  try {
+    const respuesta = await fetch('/.netlify/functions/chat', {
+      method: 'POST',
+      body: JSON.stringify({ pregunta: mensaje }),
+    });
+
+    const data = await respuesta.json();
+    agregarMensaje(data.respuesta, 'bot');
+  } catch (error) {
+    agregarMensaje('Hubo un error al procesar tu solicitud.', 'bot');
   }
+}
 
-  // Construir el mensaje de WhatsApp
-  const mensaje = `Hola, soy ${nombre}. Quiero solicitar un servicio de taxi.\n\nUbicación actual: ${ubicacion}\nDestino: ${destino}`;
-
-  // Número de WhatsApp donde quieres recibir los mensajes (con código de país, sin + ni espacios)
-  const numeroWhatsApp = '593999034055'; // <-- REEMPLAZA ESTE POR EL TUYO
-
-  // Crear la URL para enviar por WhatsApp
-  const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensaje)}`;
-
-  // Redirigir a WhatsApp
-  window.open(urlWhatsApp, '_blank');
-
-  // Opcional: actualizar el mensaje en pantalla
-  document.getElementById('respuesta').innerText = 'Redirigiendo a WhatsApp...';
+function agregarMensaje(texto, tipo) {
+  const chatBox = document.getElementById('chat-box');
+  const mensaje = document.createElement('div');
+  mensaje.className = tipo === 'bot' ? 'mensaje-bot' : 'mensaje-usuario';
+  mensaje.textContent = texto;
+  chatBox.appendChild(mensaje);
+  chatBox.scrollTop = chatBox.scrollHeight;
 }
