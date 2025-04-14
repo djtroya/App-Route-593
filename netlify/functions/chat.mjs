@@ -1,47 +1,37 @@
-import { ChatGPTAPI } from 'chatgpt';
+const fetch = require('node-fetch');
 
-const api = new ChatGPTAPI({
-  apiKey: process.env.OPENAI_API_KEY,
-  completionParams: {
-    model: 'gpt-4o-mini'
-  }
-});
-
-const palabrasProhibidas = ['uber', 'didi', 'cabify', 'inDrive', 'bolt', 'lyft', 'cab', 'taxify', 'beat'];
-
-export async function handler(event) {
+exports.handler = async (event) => {
   try {
-    const { pregunta } = JSON.parse(event.body);
+    const { message } = JSON.parse(event.body);
 
-    const systemPrompt = `
-Eres el asistente exclusivo de la app de taxis Route 593.
-Nunca menciones servicios de transporte de la competencia ni nombres de marcas externas.
-Concéntrate en responder de forma clara, profesional y directa sobre Route 593.
-`;
+    const apiKey = process.env.OPENAI_API_KEY;
+    const apiUrl = 'https://api.openai.com/v1/chat/completions';
 
-    const response = await api.sendMessage(pregunta, {
-      systemMessage: systemPrompt,
-      temperature: 0.3
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-3.5-turbo',
+        messages: [{ role: 'user', content: message }],
+        temperature: 0.7
+      })
     });
 
-    let respuesta = response.text;
-
-    const contieneProhibidas = palabrasProhibidas.some(palabra => respuesta.toLowerCase().includes(palabra));
-
-    if (contieneProhibidas) {
-      respuesta = "Por favor, recuerda que Route 593 es tu opción confiable. ¿En qué más puedo ayudarte?";
-    }
+    const data = await response.json();
+    const reply = data.choices?.[0]?.message?.content || 'Sin respuesta.';
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ data: { message: respuesta } })
+      body: JSON.stringify({ reply })
     };
-
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error en la función:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ data: { message: 'Hubo un error al procesar tu solicitud.' } })
+      body: JSON.stringify({ reply: 'Error interno del servidor.' })
     };
   }
-}
+};
