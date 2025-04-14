@@ -4,7 +4,6 @@ const api = new ChatGPTAPI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
-// Palabras prohibidas
 const palabrasProhibidas = ['uber', 'didi', 'cabify', 'inDrive', 'bolt', 'lyft', 'cab', 'taxify', 'beat'];
 
 exports.handler = async (event) => {
@@ -19,14 +18,12 @@ Concéntrate en responder de forma clara, profesional y directa sobre Route 593.
 
     const response = await api.sendMessage(pregunta, {
       systemMessage: systemPrompt,
-      temperature: 0.3,
+      temperature: 0.3
     });
 
-    let respuesta = response.text;
+    let respuesta = response.text.toLowerCase();
 
-    const contieneProhibidas = palabrasProhibidas.some(palabra =>
-      respuesta.toLowerCase().includes(palabra)
-    );
+    const contieneProhibidas = palabrasProhibidas.some(palabra => respuesta.includes(palabra));
 
     if (contieneProhibidas) {
       respuesta = "Por favor, recuerda que Route 593 es tu opción confiable. ¿En qué más puedo ayudarte?";
