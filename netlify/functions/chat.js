@@ -1,43 +1,25 @@
-const fetch = require('node-fetch');
+const { ChatGPTAPI } = require('chatgpt');
 
-exports.handler = async function (event) {
+exports.handler = async (event) => {
   try {
-    const { message } = JSON.parse(event.body);
+    const body = JSON.parse(event.body);
+    const message = body.message;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini', // Aquí está tu modelo correcto
-        messages: [{ role: 'user', content: message }],
-      }),
+    const api = new ChatGPTAPI({
+      apiKey: process.env.OPENAI_API_KEY,
     });
 
-    if (!response.ok) {
-      const errorDetails = await response.text();
-      console.error('Error response from OpenAI:', errorDetails);
-      return {
-        statusCode: response.status,
-        body: JSON.stringify({ error: 'Error desde OpenAI', details: errorDetails }),
-      };
-    }
-
-    const data = await response.json();
-    const reply = data.choices[0]?.message?.content || 'No hubo respuesta';
+    const res = await api.sendMessage(message);
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ reply }),
+      body: JSON.stringify({ response: res.text }),
     };
-
   } catch (error) {
-    console.error('Server error:', error);
+    console.error('Error:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Error en el servidor', details: error.message }),
+      body: JSON.stringify({ response: 'Hubo un error en el servidor.' }),
     };
   }
 };
