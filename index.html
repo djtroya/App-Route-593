@@ -3,21 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Route 593 - Asistente</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>Chatbot con OpenAI - Seguro</title>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-  <div class="container">
-    <h1>Route 593 - Chat de Soporte</h1>
-
-    <div class="chat-box" id="chat-box">
-      <div class="mensaje-bot">Hola, soy tu asistente de Route 593. ¿En qué puedo ayudarte hoy?</div>
-    </div>
-
-    <div class="input-box">
-      <input type="text" id="user-input" placeholder="Escribe tu pregunta..." />
-      <button onclick="enviarMensaje()">Enviar</button>
-    </div>
+  <div class="chat-container">
+    <div class="chat-window" id="chat-window"></div>
+    <form id="chat-form">
+      <input type="text" id="user-input" placeholder="Escribe tu mensaje..." required />
+      <button type="submit">Enviar</button>
+    </form>
   </div>
 
   <script src="script.js"></script>
