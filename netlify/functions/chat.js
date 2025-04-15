@@ -1,22 +1,39 @@
-// netlify/functions/chat.js
+import fetch from 'node-fetch';
 
-const { getOpenAIResponse } = require('../../src/model/openai');
-
-exports.handler = async function (event) {
+export async function handler(event) {
   try {
     const { message } = JSON.parse(event.body);
 
-    const reply = await getOpenAIResponse(message);
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: [{ role: 'user', content: message }],
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        statusCode: response.status,
+        body: JSON.stringify({ error: data }),
+      };
+    }
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ reply }),
+      body: JSON.stringify({ reply: data.choices[0].message.content }),
     };
+
   } catch (error) {
-    console.error('Controlador - Error:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: error.message }),
+      body: JSON.stringify({ error: 'Error interno: ' + error.message }),
     };
   }
-};
+}
