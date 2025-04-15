@@ -20,7 +20,13 @@ chatForm.addEventListener('submit', async (e) => {
     });
 
     const data = await response.json();
-    updateLastBotMessage(data.reply);
+
+    if (data.reply) {
+      updateLastBotMessage(data.reply);
+    } else {
+      updateLastBotMessage('No hubo respuesta del modelo.');
+    }
+
   } catch (error) {
     updateLastBotMessage('Error al conectar con el servidor.');
     console.error(error);
