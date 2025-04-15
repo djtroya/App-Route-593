@@ -1,8 +1,11 @@
+// netlify/functions/chat.js
+
 const { getOpenAIResponse } = require('../../src/model/openai');
 
 exports.handler = async function (event) {
   try {
     const { message } = JSON.parse(event.body);
+
     const reply = await getOpenAIResponse(message);
 
     return {
