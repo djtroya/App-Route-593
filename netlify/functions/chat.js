@@ -9,7 +9,7 @@ export const handler = async (event) => {
     const body = JSON.parse(event.body || '{}');
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o',
+      model: 'gpt-4o-mini',
       messages: body.messages || [
         { role: 'user', content: 'Hola, ¿en qué puedo ayudarte?' }
       ]
