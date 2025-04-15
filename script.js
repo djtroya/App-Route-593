@@ -1,43 +1,42 @@
-document.getElementById('form').addEventListener('submit', async (e) => {
-  e.preventDefault();
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.querySelector("form");
+  const input = document.querySelector("input");
+  const chat = document.getElementById("chat");
 
-  const input = document.getElementById('input');
-  const message = input.value.trim();
-  if (!message) return;
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const userMessage = input.value.trim();
+    if (!userMessage) return;
 
-  addMessage(message, 'user');
-  input.value = '';
+    // Mostrar mensaje del usuario
+    appendMessage("Tú", userMessage);
+    input.value = "";
 
-  try {
-    const res = await fetch('/.netlify/functions/chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ message }),
-    });
+    try {
+      const response = await fetch("https://regal-dango-690672.netlify.app/.netlify/functions/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ mensaje: userMessage }),
+      });
 
-    const data = await res.json();
+      if (!response.ok) throw new Error("Error en la respuesta del servidor");
 
-    if (!res.ok) {
-      console.error('Error en la respuesta del servidor:', data);
-      addMessage('Error del modelo: ' + (data.error?.message || 'Respuesta no válida.'), 'bot');
-      return;
+      const data = await response.json();
+      const botMessage = data.respuesta || "Sin respuesta del bot";
+      appendMessage("Route 593", botMessage);
+    } catch (error) {
+      appendMessage("Error", "No se pudo contactar con el servidor.");
+      console.error("Error al enviar el mensaje:", error);
     }
+  });
 
-    addMessage(data.reply, 'bot');
-
-  } catch (err) {
-    console.error('Error de red o ejecución:', err);
-    addMessage('No se pudo conectar con el modelo. Intenta más tarde.', 'bot');
+  function appendMessage(sender, message) {
+    const div = document.createElement("div");
+    div.classList.add("mensaje");
+    div.innerHTML = `<strong>${sender}:</strong> ${message}`;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
   }
 });
-
-function addMessage(text, sender) {
-  const container = document.getElementById('messages');
-  const messageDiv = document.createElement('div');
-  messageDiv.classList.add(sender);
-  messageDiv.textContent = text;
-  container.appendChild(messageDiv);
-  container.scrollTop = container.scrollHeight;
-}
