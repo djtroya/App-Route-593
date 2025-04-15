@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Route 593 - Solicitar Taxi</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Solicita tu taxi con IA</h1>
+    <form id="taxiForm">
+      <input type="text" id="nombre" placeholder="Tu nombre" required />
+      <input type="text" id="origen" placeholder="Dirección de origen" required />
+      <input type="text" id="destino" placeholder="Dirección de destino" required />
+      <input type="text" id="hora" placeholder="Hora deseada (opcional)" />
+      <input type="number" id="pasajeros" placeholder="Número de pasajeros (opcional)" />
+      <textarea id="comentarios" placeholder="Comentarios adicionales (opcional)"></textarea>
+      <button type="submit">Generar mensaje</button>
+    </form>
+
+    <div id="resultado" class="oculto">
+      <h2>Mensaje generado:</h2>
+      <p id="mensajeIA"></p>
+      <a id="whatsappBtn" target="_blank">Enviar por WhatsApp</a>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
