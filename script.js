@@ -1,48 +1,43 @@
-const chatWindow = document.getElementById('chat-window');
-const chatForm = document.getElementById('chat-form');
-const userInput = document.getElementById('user-input');
-
-chatForm.addEventListener('submit', async (e) => {
+document.getElementById('form').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const message = userInput.value.trim();
+
+  const input = document.getElementById('input');
+  const message = input.value.trim();
   if (!message) return;
 
-  appendMessage('user', message);
-  userInput.value = '';
-
-  appendMessage('bot', 'Pensando...');
+  showMessage(message, 'user');
+  input.value = '';
 
   try {
-    const response = await fetch('/.netlify/functions/chat', {
+    const res = await fetch('/.netlify/functions/chat', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message })
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ message }),
     });
 
-    const data = await response.json();
+    const data = await res.json();
 
-    if (data.reply) {
-      updateLastBotMessage(data.reply);
-    } else {
-      updateLastBotMessage('No hubo respuesta del modelo.');
+    if (!res.ok) {
+      console.error('Error del servidor:', data.error);
+      showMessage('Error del modelo: ' + (data.error?.message || 'Desconocido'), 'bot');
+      return;
     }
 
-  } catch (error) {
-    updateLastBotMessage('Error al conectar con el servidor.');
-    console.error(error);
+    showMessage(data.reply, 'bot');
+
+  } catch (err) {
+    console.error('Error de red o ejecución:', err);
+    showMessage('No hubo respuesta del modelo (error de red).', 'bot');
   }
 });
 
-function appendMessage(sender, text) {
-  const messageDiv = document.createElement('div');
-  messageDiv.classList.add('message', sender === 'user' ? 'user-message' : 'bot-message');
-  messageDiv.textContent = text;
-  chatWindow.appendChild(messageDiv);
-  chatWindow.scrollTop = chatWindow.scrollHeight;
-}
-
-function updateLastBotMessage(text) {
-  const messages = document.querySelectorAll('.bot-message');
-  const lastMessage = messages[messages.length - 1];
-  if (lastMessage) lastMessage.textContent = text;
+function showMessage(text, sender) {
+  const container = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = sender;
+  div.textContent = text;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
 }
