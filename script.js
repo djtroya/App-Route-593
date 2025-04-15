@@ -1,40 +1,37 @@
-const form = document.getElementById("formulario");
-const input = document.getElementById("mensaje");
-const chat = document.getElementById("chat");
+document.addEventListener("DOMContentLoaded", () => {
+  const chat = document.getElementById("chat");
+  const form = document.getElementById("formulario");
+  const input = document.getElementById("mensaje");
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const texto = input.value.trim();
+    if (!texto) return;
 
-  const texto = input.value.trim();
-  if (!texto) return;
+    // Mostrar mensaje del usuario
+    agregarMensaje("Usuario", texto);
+    input.value = "";
 
-  mostrarMensaje("Tú", texto);
-  input.value = "";
+    try {
+      const respuesta = await fetch("/.netlify/functions/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mensaje: texto }),
+      });
 
-  try {
-    const respuesta = await fetch("/.netlify/functions/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ mensaje: texto }),
-    });
-
-    if (!respuesta.ok) {
-      throw new Error(`Error HTTP: ${respuesta.status}`);
+      const datos = await respuesta.json();
+      agregarMensaje("Bot", datos.respuesta || "Sin respuesta del servidor");
+    } catch (error) {
+      agregarMensaje("Bot", "Error al conectar con el servidor");
+      console.error(error);
     }
+  });
 
-    const data = await respuesta.json();
-    mostrarMensaje("Bot", data.respuesta || "Sin respuesta.");
-  } catch (err) {
-    console.error(err);
-    mostrarMensaje("Bot", "Error al conectar con el servidor.");
+  function agregarMensaje(remitente, texto) {
+    const mensaje = document.createElement("div");
+    mensaje.className = "mensaje";
+    mensaje.innerHTML = `<strong>${remitente}:</strong> ${texto}`;
+    chat.appendChild(mensaje);
+    chat.scrollTop = chat.scrollHeight;
   }
 });
-
-function mostrarMensaje(remitente, mensaje) {
-  const p = document.createElement("p");
-  p.innerHTML = `<strong>${remitente}:</strong> ${mensaje}`;
-  chat.appendChild(p);
-  chat.scrollTop = chat.scrollHeight;
-}
