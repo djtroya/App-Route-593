@@ -1,32 +1,29 @@
-const { Configuration, OpenAIApi } = require("openai");
+import { OpenAI } from 'openai';
 
-const config = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
 });
 
-const openai = new OpenAIApi(config);
-
-exports.handler = async function (event) {
+export const handler = async (event) => {
   try {
-    const body = JSON.parse(event.body);
-    const userMessage = body.mensaje;
+    const body = JSON.parse(event.body || '{}');
 
-    const completion = await openai.createChatCompletion({
-      model: "gpt-4o", // o "gpt-3.5-turbo" si no tienes acceso
-      messages: [{ role: "user", content: userMessage }],
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: body.messages || [
+        { role: 'user', content: 'Hola, ¿en qué puedo ayudarte?' }
+      ]
     });
-
-    const respuesta = completion.data.choices[0].message.content;
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ respuesta }),
+      body: JSON.stringify(completion.choices[0].message)
     };
-  } catch (error) {
-    console.error("Error en función chat:", error);
+
+  } catch (err) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "Error procesando la solicitud" }),
+      body: JSON.stringify({ error: err.message })
     };
   }
 };
