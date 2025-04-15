@@ -17,7 +17,9 @@ export const handler = async (event) => {
 
     return {
       statusCode: 200,
-      body: JSON.stringify(completion.choices[0].message)
+      body: JSON.stringify({
+        respuesta: completion.choices[0].message.content
+      })
     };
 
   } catch (err) {
