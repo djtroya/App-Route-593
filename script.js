@@ -19,8 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       const datos = await respuesta.json();
-      const contenido = datos.respuesta?.content || "Sin respuesta del servidor";
-      agregarMensaje("Bot", contenido);
+      agregarMensaje("Bot", datos.respuesta || "Sin respuesta del servidor");
     } catch (error) {
       agregarMensaje("Bot", "Error al conectar con el servidor");
       console.error(error);
