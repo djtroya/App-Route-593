@@ -8,7 +8,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const texto = input.value.trim();
     if (!texto) return;
 
-    // Mostrar mensaje del usuario
     agregarMensaje("Usuario", texto);
     input.value = "";
 
@@ -20,7 +19,8 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       const datos = await respuesta.json();
-      agregarMensaje("Bot", datos.respuesta || "Sin respuesta del servidor");
+      const contenido = datos.respuesta?.content || "Sin respuesta del servidor";
+      agregarMensaje("Bot", contenido);
     } catch (error) {
       agregarMensaje("Bot", "Error al conectar con el servidor");
       console.error(error);
