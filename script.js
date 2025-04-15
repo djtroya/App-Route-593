@@ -5,7 +5,7 @@ document.getElementById('form').addEventListener('submit', async (e) => {
   const message = input.value.trim();
   if (!message) return;
 
-  showMessage(message, 'user');
+  addMessage(message, 'user');
   input.value = '';
 
   try {
@@ -20,24 +20,24 @@ document.getElementById('form').addEventListener('submit', async (e) => {
     const data = await res.json();
 
     if (!res.ok) {
-      console.error('Error del servidor:', data.error);
-      showMessage('Error del modelo: ' + (data.error?.message || 'Desconocido'), 'bot');
+      console.error('Error en la respuesta del servidor:', data);
+      addMessage('Error del modelo: ' + (data.error?.message || 'Respuesta no válida.'), 'bot');
       return;
     }
 
-    showMessage(data.reply, 'bot');
+    addMessage(data.reply, 'bot');
 
   } catch (err) {
     console.error('Error de red o ejecución:', err);
-    showMessage('No hubo respuesta del modelo (error de red).', 'bot');
+    addMessage('No se pudo conectar con el modelo. Intenta más tarde.', 'bot');
   }
 });
 
-function showMessage(text, sender) {
+function addMessage(text, sender) {
   const container = document.getElementById('messages');
-  const div = document.createElement('div');
-  div.className = sender;
-  div.textContent = text;
-  container.appendChild(div);
+  const messageDiv = document.createElement('div');
+  messageDiv.classList.add(sender);
+  messageDiv.textContent = text;
+  container.appendChild(messageDiv);
   container.scrollTop = container.scrollHeight;
 }
