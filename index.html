@@ -2,15 +2,15 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Chatbot con OpenAI - Seguro</title>
-  <link rel="stylesheet" href="style.css"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chatbot MVC</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="chat-container">
-    <div class="chat-window" id="chat-window"></div>
-    <form id="chat-form">
-      <input type="text" id="user-input" placeholder="Escribe tu mensaje..." required />
+    <div id="chat-window" class="chat-window"></div>
+    <form id="chat-form" class="chat-form">
+      <input type="text" id="user-input" placeholder="Escribe tu mensaje..." autocomplete="off" />
       <button type="submit">Enviar</button>
     </form>
   </div>
