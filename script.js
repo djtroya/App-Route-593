@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const chat = document.getElementById("chat");
-  const form = document.getElementById("formulario");
-  const input = document.getElementById("mensaje");
+  const chat = document.getElementById("chat-window");
+  const form = document.getElementById("chat-form");
+  const input = document.getElementById("user-input");
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
