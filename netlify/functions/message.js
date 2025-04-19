@@ -1,34 +1,37 @@
 export async function handler(event, context) {
+  if (event.httpMethod !== "POST") {
+    return {
+      statusCode: 405,
+      body: JSON.stringify({ reply: "Método no permitido" })
+    };
+  }
+
   try {
-    const method = event.httpMethod;
-    const contentType = event.headers['content-type'] || event.headers['Content-Type'];
-    const rawBody = event.body;
+    const data = JSON.parse(event.body || '{}');
 
-    let parsedBody;
+    const sender = data.sender || 'Usuario';
+    const message = (data.message || '').toLowerCase().trim();
 
-    try {
-      parsedBody = JSON.parse(rawBody);
-    } catch (e) {
-      parsedBody = { error: "No se pudo parsear el cuerpo", rawBody };
+    let reply = "No entendí tu mensaje.";
+
+    if (message === "hola") {
+      reply = `Hola ${sender}, ¿en qué puedo ayudarte?`;
+    } else if (message === "pedido") {
+      reply = "Para hacer un pedido, por favor envía tu ubicación.";
+    } else if (message.includes("gracias")) {
+      reply = `¡De nada, ${sender}!`;
     }
 
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        debug: {
-          method,
-          contentType,
-          parsedBody
-        }
-      })
+      body: JSON.stringify({ reply }) // <- RESPUESTA QUE ESPERA WhatsAuto
     };
   } catch (error) {
     return {
       statusCode: 500,
       body: JSON.stringify({
-        reply: "Error general en el servidor",
-        error: error.message || String(error)
+        reply: "Error interno en el servidor"
       })
     };
   }
