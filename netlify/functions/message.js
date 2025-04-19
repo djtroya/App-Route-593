@@ -1,53 +1,34 @@
 export async function handler(event, context) {
-  console.log("Método:", event.httpMethod);
-  console.log("Body crudo:", event.body);
-
-  if (event.httpMethod !== "POST") {
-    return {
-      statusCode: 405,
-      body: JSON.stringify({ reply: "Método no permitido" })
-    };
-  }
-
   try {
-    const data = typeof event.body === "string" ? JSON.parse(event.body) : event.body;
+    const method = event.httpMethod;
+    const contentType = event.headers['content-type'] || event.headers['Content-Type'];
+    const rawBody = event.body;
 
-    console.log("Body parseado:", data);
+    let parsedBody;
 
-    const app = data.app || 'WhatsAuto';
-    const sender = data.sender || 'Usuario';
-    const message = (data.message || '').toLowerCase().trim();
-    const group = data.group_name || '';
-    const phone = data.phone || '';
-
-    let reply = "No entendí tu mensaje.";
-
-    if (!message) {
-      reply = "Mensaje vacío. Por favor, escribe algo.";
-    } else if (message === "hola") {
-      reply = `Hola ${sender}, ¿en qué puedo ayudarte?`;
-    } else if (message === "pedido") {
-      reply = "Para hacer un pedido, por favor envía tu ubicación.";
-    } else if (message.includes("gracias")) {
-      reply = `¡De nada, ${sender}!`;
+    try {
+      parsedBody = JSON.parse(rawBody);
+    } catch (e) {
+      parsedBody = { error: "No se pudo parsear el cuerpo", rawBody };
     }
-
-    console.log("Respuesta generada:", reply);
 
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ reply })
+      body: JSON.stringify({
+        debug: {
+          method,
+          contentType,
+          parsedBody
+        }
+      })
     };
   } catch (error) {
-    console.error("Error capturado:", error);
-
     return {
       statusCode: 500,
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        reply: "Error al procesar el mensaje.",
-        error: error.message || String(error) || "Error desconocido"
+        reply: "Error general en el servidor",
+        error: error.message || String(error)
       })
     };
   }
