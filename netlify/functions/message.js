@@ -8,7 +8,7 @@ export async function handler(event, context) {
 
   const data = JSON.parse(event.body || '{}');
   const app = data.app || 'WhatsAuto';
-  const sender = data.sender || 'WhatsAuto';
+  const sender = data.sender || 'WhatsAuto app';
   const message = (data.message || '').toLowerCase().trim();
   const group = data.group_name || '';
   const phone = data.phone || '';
