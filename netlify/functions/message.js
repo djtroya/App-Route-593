@@ -1,5 +1,6 @@
 export async function handler(event, context) {
-  console.log("Método recibido:", event.httpMethod);
+  console.log("Método:", event.httpMethod);
+  console.log("Body crudo:", event.body);
 
   if (event.httpMethod !== "POST") {
     return {
@@ -9,10 +10,7 @@ export async function handler(event, context) {
   }
 
   try {
-    const rawBody = event.body;
-    console.log("Body recibido (raw):", rawBody);
-
-    const data = typeof rawBody === 'string' ? JSON.parse(rawBody) : rawBody;
+    const data = typeof event.body === "string" ? JSON.parse(event.body) : event.body;
 
     console.log("Body parseado:", data);
 
@@ -42,12 +40,14 @@ export async function handler(event, context) {
       body: JSON.stringify({ reply })
     };
   } catch (error) {
-    console.error("Error en el handler:", error);
+    console.error("Error capturado:", error);
+
     return {
       statusCode: 500,
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         reply: "Error al procesar el mensaje.",
-        error: error.message || "Error desconocido"
+        error: error.message || String(error) || "Error desconocido"
       })
     };
   }
