@@ -6,7 +6,6 @@ exports.handler = async (event, context) => {
 
   const contentType = event.headers['content-type'] || event.headers['Content-Type'];
 
-  // Detectamos si el contenido es JSON
   if (contentType && contentType.includes('application/json')) {
     try {
       datos = JSON.parse(event.body);
@@ -17,17 +16,18 @@ exports.handler = async (event, context) => {
         body: JSON.stringify({ message: 'Cuerpo inválido, se esperaba JSON.' }),
       };
     }
-  }
-  // Detectamos si el contenido es x-www-form-urlencoded (como envía WhatsAuto)
-  else if (contentType && contentType.includes('application/x-www-form-urlencoded')) {
+  } else if (contentType && contentType.includes('application/x-www-form-urlencoded')) {
     datos = querystring.parse(event.body);
-  }
-  // No se reconoce el tipo de contenido
-  else {
+  } else {
     return {
       statusCode: 400,
       body: JSON.stringify({ message: 'Tipo de contenido no soportado.' }),
     };
+  }
+
+  // Mapear 'sender' como 'phone' si no existe directamente
+  if (!datos.phone && datos.sender) {
+    datos.phone = datos.sender;
   }
 
   console.log('Datos recibidos:', datos);
