@@ -41,7 +41,7 @@ exports.handler = async (event, context) => {
 
   try {
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4',  // O el modelo que estés usando
+      model: 'gpt-4o-mini',  // O el modelo que estés usando
       messages: [
         {
           role: 'system',
