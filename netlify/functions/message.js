@@ -21,7 +21,7 @@ exports.handler = async (event, context) => {
   } else if (contentType.includes("application/x-www-form-urlencoded")) {
     const params = new URLSearchParams(event.body);
     params.forEach((value, key) => {
-      data[key] = value;
+      data[key] = decodeURIComponent(value);  // Decodificar para manejar tildes y caracteres especiales
     });
   }
 
@@ -64,7 +64,7 @@ exports.handler = async (event, context) => {
     statusCode: 200,
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      reply: aiReply,
+      reply: encodeURIComponent(aiReply),  // Codificar la respuesta para mantener caracteres especiales
       app,
       sender,
       phone,
