@@ -1,5 +1,5 @@
 // netlify/functions/registro.js
-const { procesarMensaje } = require('./controllers/mensajeController');
+const { procesarMensaje } = require('./mensajeController');
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
