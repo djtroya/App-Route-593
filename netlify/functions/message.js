@@ -2,7 +2,6 @@ export async function handler(event, context) {
   console.log("Método recibido:", event.httpMethod);
 
   if (event.httpMethod !== "POST") {
-    console.log("Método no permitido");
     return {
       statusCode: 405,
       body: JSON.stringify({ reply: "Método no permitido" })
@@ -11,7 +10,6 @@ export async function handler(event, context) {
 
   try {
     let data = {};
-
     const contentType = event.headers['content-type'] || event.headers['Content-Type'];
     console.log("Content-Type:", contentType);
 
@@ -27,14 +25,19 @@ export async function handler(event, context) {
     const sender = data.sender || 'Usuario';
     const message = (data.message || '').toLowerCase().trim();
 
-    let reply = "No entendí tu mensaje.";
+    let reply = "Hola, soy el asistente del sistema *Route 593*. No entendí tu mensaje, ¿puedes repetirlo?";
 
-    if (message === "hola") {
-      reply = `Hola ${sender}, ¿en qué puedo ayudarte?`;
-    } else if (message === "pedido") {
-      reply = "Para hacer un pedido, por favor envía tu ubicación.";
-    } else if (message.includes("gracias")) {
-      reply = `¡De nada, ${sender}!`;
+    // Palabras clave por intención
+    const saludos = ["hola", "buenas", "saludos", "hey", "holi"];
+    const pedidos = ["pedido", "taxi", "llevar", "auto", "quiero ir", "necesito un taxi"];
+    const agradecimientos = ["gracias", "muy amable", "te agradezco", "graciass"];
+
+    if (saludos.some(p => message.includes(p))) {
+      reply = `Hola ${sender}, soy el asistente del sistema *Route 593*. ¿En qué puedo ayudarte?`;
+    } else if (pedidos.some(p => message.includes(p))) {
+      reply = "Para hacer un pedido con *Route 593*, por favor envía tu ubicación.";
+    } else if (agradecimientos.some(p => message.includes(p))) {
+      reply = `¡De nada, ${sender}! Estamos para servirte en *Route 593*.`;
     }
 
     console.log("Respuesta generada:", reply);
@@ -42,7 +45,10 @@ export async function handler(event, context) {
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ reply })
+      body: JSON.stringify({
+        reply,
+        received: data  // devolvemos los datos originales para trazabilidad
+      })
     };
   } catch (error) {
     console.error("Error procesando la solicitud:", error);
