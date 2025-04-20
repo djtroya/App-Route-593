@@ -4,6 +4,7 @@ export async function handler(event, context) {
   if (event.httpMethod !== "POST") {
     return {
       statusCode: 405,
+      headers: { "Content-Type": "application/json; charset=utf-8" },
       body: JSON.stringify({ reply: "Método no permitido" })
     };
   }
@@ -25,29 +26,28 @@ export async function handler(event, context) {
     const sender = data.sender || 'Usuario';
     const message = (data.message || '').toLowerCase().trim();
 
-    let reply = "Hola, soy el asistente del sistema *Route 593*. No entendí tu mensaje, ¿puedes repetirlo?";
+    let reply = "No entendí tu mensaje. ¿Puedes escribirlo de otra forma?";
 
-    // Palabras clave por intención
     const saludos = ["hola", "buenas", "saludos", "hey", "holi"];
     const pedidos = ["pedido", "taxi", "llevar", "auto", "quiero ir", "necesito un taxi"];
     const agradecimientos = ["gracias", "muy amable", "te agradezco", "graciass"];
 
     if (saludos.some(p => message.includes(p))) {
-      reply = `Hola ${sender}, soy el asistente del sistema *Route 593*. ¿En qué puedo ayudarte?`;
+      reply = `Hola ${sender}, soy el asistente del sistema *Route 593*. ¿Necesitas un taxi?`;
     } else if (pedidos.some(p => message.includes(p))) {
-      reply = "Para hacer un pedido con *Route 593*, por favor envía tu ubicación.";
+      reply = "Perfecto. Para hacer un pedido, por favor envía tu ubicación o escribe a dónde quieres ir.";
     } else if (agradecimientos.some(p => message.includes(p))) {
-      reply = `¡De nada, ${sender}! Estamos para servirte en *Route 593*.`;
+      reply = `¡De nada, ${sender}! Cualquier cosa, aquí estoy.`;
     }
 
     console.log("Respuesta generada:", reply);
 
     return {
       statusCode: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json; charset=utf-8" },
       body: JSON.stringify({
         reply,
-        received: data  // devolvemos los datos originales para trazabilidad
+        received: data
       })
     };
   } catch (error) {
@@ -55,6 +55,7 @@ export async function handler(event, context) {
 
     return {
       statusCode: 500,
+      headers: { "Content-Type": "application/json; charset=utf-8" },
       body: JSON.stringify({
         reply: "Error interno en el servidor",
         error: error.message || "Error desconocido"
