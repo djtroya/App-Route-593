@@ -5,19 +5,20 @@ const supabaseKey = process.env.SUPABASE_API_KEY;
 
 // Validación por si alguna de las variables está faltando
 if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Faltan las variables de entorno SUPABASE_URL o SUPABASE_KEY');
+  throw new Error('Faltan las variables de entorno SUPABASE_URL o SUPABASE_API_KEY');
 }
 
 const client = createClient(supabaseUrl, supabaseKey);
 
-async function procesarMensaje({ phone, location, urbanization, destination }) {
-  if (!phone || !location || !urbanization || !destination) {
-    throw new Error('Faltan parámetros: phone, location, urbanization o destination');
+async function procesarMensaje({ phone, message, app, sender, group_name }) {
+  // Verificamos que los datos clave estén presentes
+  if (!phone || !message) {
+    throw new Error('Faltan parámetros básicos: phone o message');
   }
 
   const { data, error } = await client
     .from('registros')
-    .insert([{ phone, location, urbanization, destination }]);
+    .insert([{ phone, message, app, sender, group_name }]);
 
   if (error) {
     console.error('Error al guardar los datos:', error);
