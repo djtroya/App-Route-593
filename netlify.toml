@@ -1,3 +1,6 @@
 [build]
   command = "npm install --legacy-peer-deps"
-  publish = "dist"
+  publish = "."
+
+[functions]
+  directory = "netlify/functions"
