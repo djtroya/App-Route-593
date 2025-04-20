@@ -9,7 +9,8 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const procesarMensaje = async (data) => {
   console.log("Datos recibidos:", data);
 
-  const { phone, message } = data;
+  const phone = body.phone || body.sender;
+const { message } = body;
 
   if (!phone || !message) {
     throw new Error('Faltan parámetros: phone o message');
