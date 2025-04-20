@@ -1,7 +1,6 @@
 export async function handler(event, context) {
   console.log("Método recibido:", event.httpMethod);
-  
-  // Verifica que sea POST
+
   if (event.httpMethod !== "POST") {
     console.log("Método no permitido");
     return {
@@ -11,17 +10,25 @@ export async function handler(event, context) {
   }
 
   try {
-    // Intenta parsear el cuerpo
-    const data = JSON.parse(event.body || '{}');
+    let data = {};
+
+    const contentType = event.headers['content-type'] || event.headers['Content-Type'];
+    console.log("Content-Type:", contentType);
+
+    if (contentType.includes('application/json')) {
+      data = JSON.parse(event.body || '{}');
+    } else if (contentType.includes('application/x-www-form-urlencoded')) {
+      const params = new URLSearchParams(event.body);
+      data = Object.fromEntries(params.entries());
+    }
+
     console.log("Datos parseados:", data);
 
     const sender = data.sender || 'Usuario';
     const message = (data.message || '').toLowerCase().trim();
 
     let reply = "No entendí tu mensaje.";
-    console.log("Mensaje recibido:", message);
 
-    // Lógica de respuestas
     if (message === "hola") {
       reply = `Hola ${sender}, ¿en qué puedo ayudarte?`;
     } else if (message === "pedido") {
@@ -35,7 +42,7 @@ export async function handler(event, context) {
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ reply }) // Esta es la respuesta final que WhatsAuto espera
+      body: JSON.stringify({ reply })
     };
   } catch (error) {
     console.error("Error procesando la solicitud:", error);
