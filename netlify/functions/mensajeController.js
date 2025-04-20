@@ -1,46 +1,31 @@
-// netlify/functions/mensajeController.js
-const { createClient } = require('@supabase/supabase-js');
+const { procesarMensaje } = require('./mensajeController');
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_API_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
+exports.handler = async (event, context) => {
+  const { body } = event; // Se obtiene el cuerpo de la solicitud
 
-// Detectar campos desde el mensaje con formato: "cedula;ubicacion;urbanizacion;destino"
-const procesarMensaje = async (data) => {
-  console.log("Datos recibidos:", data);
-
-  const phone = body.phone || body.sender;
-const { message } = body;
-
-  if (!phone || !message) {
-    throw new Error('Faltan parámetros: phone o message');
+  // Si el cuerpo está vacío, retorna un error
+  if (!body) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ message: 'No se recibieron datos.' }),
+    };
   }
 
-  // Separar el mensaje por punto y coma
-  const partes = message.split(';');
-  if (partes.length < 4) {
-    throw new Error('Formato de mensaje incorrecto. Esperado: cedula;ubicacion;urbanizacion;destino');
+  const datos = JSON.parse(body); // Convierte el cuerpo a un objeto JSON
+  console.log('Datos recibidos:', datos);
+
+  try {
+    // Procesamos el mensaje
+    await procesarMensaje(datos);
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ message: 'Datos procesados correctamente.' }),
+    };
+  } catch (error) {
+    console.error('Error:', error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ message: 'Error procesando los datos.' }),
+    };
   }
-
-  const [cedula, ubicacion, urbanizacion, destino] = partes;
-
-  const { error } = await supabase
-    .from('clientes')
-    .insert([{
-      cedula,
-      ubicacion,
-      urbanizacion,
-      destino,
-      mensaje: message,
-      numero: phone,
-      fecharegistro: new Date().toISOString(),
-    }]);
-
-  if (error) {
-    throw new Error(`Error al guardar en Supabase: ${error.message}`);
-  }
-
-  return { status: 'ok', mensaje: 'Mensaje guardado con éxito en Supabase' };
 };
-
-module.exports = { procesarMensaje };
