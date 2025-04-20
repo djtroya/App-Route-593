@@ -1,9 +1,9 @@
-const { Configuration, OpenAIApi } = require("openai");
+import { OpenAI } from 'openai';  // Asegúrate de importar correctamente la nueva librería
 
-const configuration = new Configuration({
+const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
+  baseURL: 'https://api.openai.com/v1',  // Esto es importante para el nuevo endpoint
 });
-const openai = new OpenAIApi(configuration);
 
 exports.handler = async (event, context) => {
   if (event.httpMethod !== "POST") {
@@ -16,7 +16,6 @@ exports.handler = async (event, context) => {
   const contentType = event.headers["content-type"] || event.headers["Content-Type"];
   let data = {};
 
-  // Verificar el tipo de contenido
   if (contentType.includes("application/json")) {
     data = JSON.parse(event.body || "{}");
   } else if (contentType.includes("application/x-www-form-urlencoded")) {
@@ -26,14 +25,11 @@ exports.handler = async (event, context) => {
     });
   }
 
-  // Verificar si los datos esperados están presentes
   const app = data.app || "WhatsAuto";
   const sender = data.sender || "Cliente";
   const message = (data.message || "").trim();
   const phone = data.phone || "";
-  const group = data.group_name || "";
 
-  // Si no hay mensaje, responder con un error
   if (!message) {
     return {
       statusCode: 400,
@@ -41,33 +37,29 @@ exports.handler = async (event, context) => {
     };
   }
 
-  console.log("Mensaje recibido:", message);
-
-  // Llamada a OpenAI
   let aiReply = "Gracias por tu mensaje.";
 
   try {
-    const completion = await openai.createChatCompletion({
-      model: "gpt-4o-mini",
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4',  // O el modelo que estés usando
       messages: [
         {
-          role: "system",
-          content: "Eres un asistente amable y profesional del sistema de pedidos de taxi Route 593. Siempre hablas en español con buena ortografía y ayudas al cliente a pedir un taxi, compartir su ubicación, cédula o destino.",
+          role: 'system',
+          content: 'Eres un asistente amable y profesional del sistema de pedidos de taxi Route 593.',
         },
         {
-          role: "user",
+          role: 'user',
           content: message,
         },
       ],
     });
 
-    aiReply = completion.data.choices[0].message.content.trim();
+    aiReply = completion.choices[0].message.content.trim();
   } catch (error) {
     console.error("Error con OpenAI:", error);
     aiReply = "Lo siento, hubo un error al procesar tu mensaje. Intenta de nuevo.";
   }
 
-  // Responder con la respuesta generada
   return {
     statusCode: 200,
     headers: { "Content-Type": "application/json" },
