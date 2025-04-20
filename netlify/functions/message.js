@@ -1,6 +1,6 @@
-export async function handler(event, context) {
-  console.log("Método recibido:", event.httpMethod);
+let memoriaUsuarios = {}; // Simulación de memoria en tiempo real
 
+export async function handler(event, context) {
   if (event.httpMethod !== "POST") {
     return {
       statusCode: 405,
@@ -10,9 +10,8 @@ export async function handler(event, context) {
   }
 
   try {
-    let data = {};
     const contentType = event.headers['content-type'] || event.headers['Content-Type'];
-    console.log("Content-Type:", contentType);
+    let data = {};
 
     if (contentType.includes('application/json')) {
       data = JSON.parse(event.body || '{}');
@@ -21,45 +20,49 @@ export async function handler(event, context) {
       data = Object.fromEntries(params.entries());
     }
 
-    console.log("Datos parseados:", data);
-
     const sender = data.sender || 'Usuario';
-    const message = (data.message || '').toLowerCase().trim();
+    const phone = data.phone || 'desconocido';
+    const message = (data.message || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
 
-    let reply = "No entendí tu mensaje. ¿Puedes escribirlo de otra forma?";
+    let reply = '';
+    const yaRegistrado = memoriaUsuarios[phone]?.cedula;
+    const contieneCedula = /\b\d{10}\b/.test(message);
+    const contieneUbicacion = /(mi ubicacion|estoy aqui|direccion es|urbanizacion|voy a|destino)/.test(message);
+    const coordenadas = message.match(/-?\d{1,3}\.\d{3,},\s*-?\d{1,3}\.\d{3,}/);
 
-    const saludos = ["hola", "buenas", "saludos", "hey", "holi"];
-    const pedidos = ["pedido", "taxi", "llevar", "auto", "quiero ir", "necesito un taxi"];
-    const agradecimientos = ["gracias", "muy amable", "te agradezco", "graciass"];
-
-    if (saludos.some(p => message.includes(p))) {
-      reply = `Hola ${sender}, soy el asistente del sistema *Route 593*. ¿Necesitas un taxi?`;
-    } else if (pedidos.some(p => message.includes(p))) {
-      reply = "Perfecto. Para hacer un pedido, por favor envía tu ubicación o escribe a dónde quieres ir.";
-    } else if (agradecimientos.some(p => message.includes(p))) {
-      reply = `¡De nada, ${sender}! Cualquier cosa, aquí estoy.`;
+    if (!yaRegistrado && contieneCedula) {
+      const cedula = message.match(/\b\d{10}\b/)[0];
+      memoriaUsuarios[phone] = { cedula };
+      reply = `Gracias ${sender}, hemos registrado tu cédula. ¿Podrías indicarnos tu urbanización o destino?`;
+    } else if (!yaRegistrado) {
+      reply = `Hola ${sender}, soy el asistente de *Route 593*. Antes de continuar, por favor envía tu número de cédula (10 dígitos).`;
+    } else if (contieneUbicacion || coordenadas) {
+      reply = `¡Perfecto ${sender}! Hemos recibido tu destino. Un conductor se pondrá en contacto contigo.`;
+    } else if (message.includes("hola") || message.includes("buenas")) {
+      reply = `Hola ${sender}, ¿en qué podemos ayudarte hoy? Puedes escribir "pedido" o compartir tu ubicación.`;
+    } else if (message.includes("pedido") || message.includes("taxi") || message.includes("llevar")) {
+      reply = `Genial ${sender}, por favor indícanos tu ubicación o urbanización para enviarte un taxi.`;
+    } else if (message.includes("gracias")) {
+      reply = `¡Con gusto, ${sender}! Estamos para servirte en Route 593.`;
+    } else {
+      reply = `No entendí tu mensaje, ${sender}. Puedes escribir "pedido", enviar tu ubicación o tu cédula si es la primera vez.`;
     }
-
-    console.log("Respuesta generada:", reply);
 
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json; charset=utf-8" },
       body: JSON.stringify({
         reply,
-        received: data
+        received: data,
+        registrado: memoriaUsuarios[phone] || null
       })
     };
   } catch (error) {
     console.error("Error procesando la solicitud:", error);
-
     return {
       statusCode: 500,
       headers: { "Content-Type": "application/json; charset=utf-8" },
-      body: JSON.stringify({
-        reply: "Error interno en el servidor",
-        error: error.message || "Error desconocido"
-      })
+      body: JSON.stringify({ reply: "Error interno del servidor", error: error.message })
     };
   }
 }
