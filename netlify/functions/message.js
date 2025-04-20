@@ -41,7 +41,7 @@ exports.handler = async (event, context) => {
 
   try {
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',  // O el modelo que estés usando
+      model: 'gpt-4',  // O el modelo que estés usando
       messages: [
         {
           role: 'system',
@@ -64,7 +64,7 @@ exports.handler = async (event, context) => {
     statusCode: 200,
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      reply: encodeURIComponent(aiReply),  // Codificar la respuesta para mantener caracteres especiales
+      reply: aiReply,  // Ahora enviamos la respuesta sin codificar
       app,
       sender,
       phone,
