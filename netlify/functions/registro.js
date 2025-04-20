@@ -1,8 +1,10 @@
+// netlify/functions/registro.js
 const { procesarMensaje } = require('./mensajeController');
 
 exports.handler = async (event) => {
-  // Aceptar POST y GET temporalmente para pruebas
-  if (event.httpMethod !== 'POST' && event.httpMethod !== 'GET') {
+  console.log('Evento recibido:', event);
+
+  if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
       body: 'Método no permitido',
@@ -12,15 +14,18 @@ exports.handler = async (event) => {
   try {
     let data;
 
-    if (event.httpMethod === 'POST') {
-      // Si es POST, parseamos el cuerpo del mensaje
+    if (event.headers['content-type'] === 'application/json' || event.headers['Content-Type'] === 'application/json') {
       data = JSON.parse(event.body);
     } else {
-      // Si es GET, tomamos los parámetros de la URL (query string)
-      data = event.queryStringParameters;
+      // Manejo de formulario x-www-form-urlencoded
+      const params = new URLSearchParams(event.body);
+      data = {};
+      for (const [key, value] of params.entries()) {
+        data[key] = value;
+      }
     }
 
-    console.log('Datos recibidos:', data); // Agregar esta línea para verificar
+    console.log('Datos recibidos:', data);
 
     const respuesta = await procesarMensaje(data);
 
@@ -29,9 +34,13 @@ exports.handler = async (event) => {
       body: JSON.stringify(respuesta),
     };
   } catch (error) {
+    console.error('Error en registro.js:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Error al procesar el mensaje', detalle: error.message }),
+      body: JSON.stringify({
+        error: 'Error al procesar el mensaje',
+        detalle: error.message,
+      }),
     };
   }
 };
