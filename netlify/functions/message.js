@@ -1,68 +1,78 @@
-let memoriaUsuarios = {}; // Simulación de memoria en tiempo real
+// netlify/functions/message.js
 
 export async function handler(event, context) {
+  console.info("Método recibido:", event.httpMethod);
+
   if (event.httpMethod !== "POST") {
     return {
       statusCode: 405,
-      headers: { "Content-Type": "application/json; charset=utf-8" },
-      body: JSON.stringify({ reply: "Método no permitido" })
+      body: JSON.stringify({ reply: "Método no permitido" }),
     };
   }
 
-  try {
-    const contentType = event.headers['content-type'] || event.headers['Content-Type'];
-    let data = {};
+  let data = {};
+  const contentType = event.headers["content-type"] || event.headers["Content-Type"] || "";
 
-    if (contentType.includes('application/json')) {
-      data = JSON.parse(event.body || '{}');
-    } else if (contentType.includes('application/x-www-form-urlencoded')) {
-      const params = new URLSearchParams(event.body);
-      data = Object.fromEntries(params.entries());
+  try {
+    if (contentType.includes("application/json")) {
+      data = JSON.parse(event.body || "{}");
+    } else if (contentType.includes("application/x-www-form-urlencoded")) {
+      data = Object.fromEntries(new URLSearchParams(event.body));
+    } else {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ reply: "Formato no soportado" }),
+      };
     }
 
-    const sender = data.sender || 'Usuario';
-    const phone = data.phone || 'desconocido';
-    const message = (data.message || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    const app = data.app || "WhatsAuto";
+    const sender = data.sender || "Usuario";
+    const message = (data.message || "").toLowerCase().trim();
+    const phone = data.phone || "sin número";
+    const group = data.group_name || "";
+    const coordenadas = data.location || "";
 
-    let reply = '';
+    console.info("Content-Type:", contentType);
+    console.info("Datos parseados:", data);
+
+    // Simulación de memoria temporal por número
+    global.memoriaUsuarios = global.memoriaUsuarios || {};
+
+    let reply = "No entendí tu mensaje. Soy el asistente de *Route 593*, ¿en qué puedo ayudarte?";
     const yaRegistrado = memoriaUsuarios[phone]?.cedula;
     const contieneCedula = /\b\d{10}\b/.test(message);
-    const contieneUbicacion = /(mi ubicacion|estoy aqui|direccion es|urbanizacion|voy a|destino)/.test(message);
-    const coordenadas = message.match(/-?\d{1,3}\.\d{3,},\s*-?\d{1,3}\.\d{3,}/);
+    const contieneUbicacion = /(urbanización|destino|barrio|sector)/i.test(message) || coordenadas;
 
     if (!yaRegistrado && contieneCedula) {
       const cedula = message.match(/\b\d{10}\b/)[0];
       memoriaUsuarios[phone] = { cedula };
-      reply = `Gracias ${sender}, hemos registrado tu cédula. ¿Podrías indicarnos tu urbanización o destino?`;
+      if (contieneUbicacion || coordenadas) {
+        reply = `Gracias ${sender}, hemos registrado tu cédula. También recibimos tu destino. Un conductor se comunicará contigo.`;
+      } else {
+        reply = `Gracias ${sender}, hemos registrado tu cédula. ¿Podrías indicarnos tu urbanización o destino?`;
+      }
     } else if (!yaRegistrado) {
       reply = `Hola ${sender}, soy el asistente de *Route 593*. Antes de continuar, por favor envía tu número de cédula (10 dígitos).`;
     } else if (contieneUbicacion || coordenadas) {
       reply = `¡Perfecto ${sender}! Hemos recibido tu destino. Un conductor se pondrá en contacto contigo.`;
     } else if (message.includes("hola") || message.includes("buenas")) {
-      reply = `Hola ${sender}, ¿en qué podemos ayudarte hoy? Puedes escribir "pedido" o compartir tu ubicación.`;
-    } else if (message.includes("pedido") || message.includes("taxi") || message.includes("llevar")) {
-      reply = `Genial ${sender}, por favor indícanos tu ubicación o urbanización para enviarte un taxi.`;
+      reply = `Hola ${sender}, soy el asistente de *Route 593*. ¿Deseas pedir un taxi?`;
     } else if (message.includes("gracias")) {
-      reply = `¡Con gusto, ${sender}! Estamos para servirte en Route 593.`;
-    } else {
-      reply = `No entendí tu mensaje, ${sender}. Puedes escribir "pedido", enviar tu ubicación o tu cédula si es la primera vez.`;
+      reply = `¡De nada, ${sender}! Estamos para ayudarte.`;
     }
+
+    console.info("Respuesta generada:", reply);
 
     return {
       statusCode: 200,
-      headers: { "Content-Type": "application/json; charset=utf-8" },
-      body: JSON.stringify({
-        reply,
-        received: data,
-        registrado: memoriaUsuarios[phone] || null
-      })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reply }),
     };
   } catch (error) {
     console.error("Error procesando la solicitud:", error);
     return {
       statusCode: 500,
-      headers: { "Content-Type": "application/json; charset=utf-8" },
-      body: JSON.stringify({ reply: "Error interno del servidor", error: error.message })
+      body: JSON.stringify({ reply: "Ocurrió un error en el sistema Route 593." }),
     };
   }
 }
