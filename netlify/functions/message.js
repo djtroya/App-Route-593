@@ -16,6 +16,7 @@ exports.handler = async (event, context) => {
   const contentType = event.headers["content-type"] || event.headers["Content-Type"];
   let data = {};
 
+  // Verificar el tipo de contenido
   if (contentType.includes("application/json")) {
     data = JSON.parse(event.body || "{}");
   } else if (contentType.includes("application/x-www-form-urlencoded")) {
@@ -25,11 +26,20 @@ exports.handler = async (event, context) => {
     });
   }
 
+  // Verificar si los datos esperados están presentes
   const app = data.app || "WhatsAuto";
   const sender = data.sender || "Cliente";
   const message = (data.message || "").trim();
   const phone = data.phone || "";
   const group = data.group_name || "";
+
+  // Si no hay mensaje, responder con un error
+  if (!message) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ reply: "No se recibió ningún mensaje" }),
+    };
+  }
 
   console.log("Mensaje recibido:", message);
 
@@ -38,7 +48,7 @@ exports.handler = async (event, context) => {
 
   try {
     const completion = await openai.createChatCompletion({
-      model: "gpt-4o",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
@@ -57,6 +67,7 @@ exports.handler = async (event, context) => {
     aiReply = "Lo siento, hubo un error al procesar tu mensaje. Intenta de nuevo.";
   }
 
+  // Responder con la respuesta generada
   return {
     statusCode: 200,
     headers: { "Content-Type": "application/json" },
