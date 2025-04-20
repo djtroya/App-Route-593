@@ -1,31 +1,27 @@
-const { procesarMensaje } = require('./mensajeController');
+const supabase = require('@supabase/supabase-js');
+const { createClient } = supabase;
 
-exports.handler = async (event, context) => {
-  const { body } = event; // Se obtiene el cuerpo de la solicitud
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
+const client = createClient(supabaseUrl, supabaseKey);
 
-  // Si el cuerpo está vacío, retorna un error
-  if (!body) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ message: 'No se recibieron datos.' }),
-    };
+async function procesarMensaje({ phone, location, urbanization, destination }) {
+  // Verificamos que los datos no falten
+  if (!phone || !location || !urbanization || !destination) {
+    throw new Error('Faltan parámetros: phone, location, urbanization o destination');
   }
 
-  const datos = JSON.parse(body); // Convierte el cuerpo a un objeto JSON
-  console.log('Datos recibidos:', datos);
+  // Guardamos los datos en Supabase
+  const { data, error } = await client
+    .from('registros')
+    .insert([{ phone, location, urbanization, destination }]);
 
-  try {
-    // Procesamos el mensaje
-    await procesarMensaje(datos);
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ message: 'Datos procesados correctamente.' }),
-    };
-  } catch (error) {
-    console.error('Error:', error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ message: 'Error procesando los datos.' }),
-    };
+  if (error) {
+    console.error('Error al guardar los datos:', error);
+    throw new Error('No se pudo guardar en la base de datos');
   }
-};
+
+  console.log('Datos guardados:', data);
+}
+
+module.exports = { procesarMensaje };
