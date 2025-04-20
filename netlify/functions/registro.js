@@ -1,46 +1,38 @@
-// netlify/functions/registro.js
-const { procesarMensaje } = require('./mensajeController');
+const { Client } = require('pg');
+const { procesarMensaje } = require('./mensajeController'); // Asegúrate que este archivo existe y tiene la lógica correcta
+
+const client = new Client({
+  user: process.env.SUPABASE_USER,
+  host: process.env.SUPABASE_HOST,
+  database: process.env.SUPABASE_DB,
+  password: process.env.SUPABASE_PASSWORD,
+  port: 5432,
+});
 
 exports.handler = async (event) => {
-  console.log('Evento recibido:', event);
-
-  if (event.httpMethod !== 'POST') {
-    return {
-      statusCode: 405,
-      body: 'Método no permitido',
-    };
-  }
-
   try {
-    let data;
+    // Procesamos el cuerpo de la solicitud como JSON
+    const body = JSON.parse(event.body); // Asegúrate de que el cuerpo es un JSON válido
+    const phone = body.phone || body.sender; // Tomamos el teléfono o sender como teléfono
+    const { message } = body;
 
-    if (event.headers['content-type'] === 'application/json' || event.headers['Content-Type'] === 'application/json') {
-      data = JSON.parse(event.body);
-    } else {
-      // Manejo de formulario x-www-form-urlencoded
-      const params = new URLSearchParams(event.body);
-      data = {};
-      for (const [key, value] of params.entries()) {
-        data[key] = value;
-      }
+    // Si no tenemos teléfono o mensaje, devolvemos un error
+    if (!phone || !message) {
+      throw new Error('Faltan parámetros: phone o message');
     }
 
-    console.log('Datos recibidos:', data);
-
-    const respuesta = await procesarMensaje(data);
+    // Procesamos el mensaje y lo guardamos en la base de datos (con la lógica de mensajeController)
+    const resultado = await procesarMensaje(phone, message);
 
     return {
       statusCode: 200,
-      body: JSON.stringify(respuesta),
+      body: JSON.stringify({ success: true, data: resultado }),
     };
   } catch (error) {
-    console.error('Error en registro.js:', error);
+    console.error("Error en registro.js:", error);
     return {
       statusCode: 500,
-      body: JSON.stringify({
-        error: 'Error al procesar el mensaje',
-        detalle: error.message,
-      }),
+      body: JSON.stringify({ error: 'Error al procesar el mensaje' }),
     };
   }
 };
