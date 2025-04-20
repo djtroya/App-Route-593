@@ -17,7 +17,7 @@ async function procesarMensaje({ phone, message, cedula, location, urbanization,
   const { data, error } = await client
     .from('clientes')
     .insert([{
-      número: phone,
+      numero: phone,
       mensaje: message,
       cedula: cedula || null,
       ubicacion: location || null,
