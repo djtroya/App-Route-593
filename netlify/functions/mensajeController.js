@@ -1,32 +1,28 @@
 // netlify/functions/mensajeController.js
 const { createClient } = require('@supabase/supabase-js');
 
-// Configuración de Supabase
-const supabaseUrl = process.env.SUPABASE_URL; // Tu URL de Supabase
-const supabaseKey = process.env.SUPABASE_API_KEY; // Tu API key de Supabase
+// Configuración de Supabase desde variables de entorno
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_API_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Función para procesar el mensaje y guardarlo en Supabase
 const procesarMensaje = async (data) => {
-  // Verificación de los datos requeridos
-  if (!data.mensaje || !data.numero || !data.cedula || !data.ubicacion || !data.urbanizacion || !data.destino) {
+  if (!data.cedula || !data.ubicacion || !data.urbanizacion || !data.destino || !data.mensaje || !data.numero) {
     throw new Error('Faltan datos requeridos');
   }
 
-  // Guardar los datos en Supabase (en la tabla 'clientes')
-  const { data: cliente, error } = await supabase
+  const { error } = await supabase
     .from('clientes')
-    .insert([
-      {
-        cedula: data.cedula,
-        ubicacion: data.ubicacion,
-        urbanizacion: data.urbanizacion,
-        destino: data.destino,
-        mensaje: data.mensaje,
-        numero: data.numero,
-        fecharegistro: new Date().toISOString(),
-      },
-    ]);
+    .insert([{
+      cedula: data.cedula,
+      ubicacion: data.ubicacion,
+      urbanizacion: data.urbanizacion,
+      destino: data.destino,
+      mensaje: data.mensaje,
+      numero: data.numero,
+      fecharegistro: new Date().toISOString(),
+    }]);
 
   if (error) {
     throw new Error(`Error al guardar en Supabase: ${error.message}`);
