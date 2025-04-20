@@ -1,7 +1,6 @@
-// netlify/functions/message.js
-let sesiones = {}; // Memoria temporal por número de teléfono
-
 export async function handler(event, context) {
+  console.log("Método recibido:", event.httpMethod);
+
   if (event.httpMethod !== "POST") {
     return {
       statusCode: 405,
@@ -9,75 +8,57 @@ export async function handler(event, context) {
     };
   }
 
-  const contentType = event.headers["content-type"] || "";
+  // Detectar tipo de contenido y parsear correctamente
   let data = {};
+  const contentType = event.headers["content-type"] || "";
 
-  // WhatsAuto usualmente envía como x-www-form-urlencoded
-  if (contentType.includes("application/x-www-form-urlencoded")) {
-    const params = new URLSearchParams(event.body);
-    for (let [key, value] of params.entries()) {
-      data[key] = value;
-    }
-  } else {
-    try {
-      data = JSON.parse(event.body);
-    } catch (error) {
-      console.error("Error al parsear JSON:", error);
-    }
+  if (contentType.includes("application/json")) {
+    data = JSON.parse(event.body || '{}');
+  } else if (contentType.includes("application/x-www-form-urlencoded")) {
+    const querystring = require("querystring");
+    data = querystring.parse(event.body);
   }
 
   const app = data.app || 'WhatsAuto';
-  const sender = data.sender || 'WhatsAuto';
-  const phone = data.phone || 'sin número';
-  const rawMessage = data.message || '';
-  const message = rawMessage.toLowerCase().trim();
+  const sender = data.sender || 'cliente';
+  const message = (data.message || '').toLowerCase().trim();
+  const phone = data.phone || '';
+  
+  // Variables en memoria
+  let isNewUser = false;
+  let cedula = data.cedula || '';
 
-  // Inicializamos sesión si no existe
-  if (!sesiones[phone]) {
-    sesiones[phone] = { estado: 'inicio', cedula: '', ubicacion: '' };
+  // Inicializar respuesta
+  let reply = `Hola ${sender}, soy el asistente de Route 593.`;
+
+  // Verificar si envió cédula (solo números de 10 dígitos)
+  const cedulaRegex = /^\d{10}$/;
+  if (cedulaRegex.test(message)) {
+    cedula = message;
+    isNewUser = true;
+    reply = `Gracias. Cédula registrada: ${cedula}. ¿Puedes enviarme tu ubicación o urbanización?`;
+  } 
+  else if (message.includes("pedido") || message.includes("taxi")) {
+    reply = `Por favor, envía tu ubicación o destino.`;
+  } 
+  else if (message.includes("hola")) {
+    reply = `Hola ${sender}, ¿necesitas un taxi?`;
+  }
+  else if (message.includes("gracias")) {
+    reply = `¡Con gusto!`;
+  } 
+  else if (!cedula && message.match(/\d+/)) {
+    reply = `Parece que intentas enviar tu cédula. Asegúrate de que tenga exactamente 10 dígitos.`;
+  } 
+  else {
+    reply = `Indica "pedido" para solicitar un taxi o envía tu cédula.`;
   }
 
-  let estado = sesiones[phone].estado;
-  let reply = "";
-
-  // Flujo según el estado del usuario
-  if (estado === 'inicio') {
-    reply = `Hola, soy el asistente de pedidos de la empresa Route 593. ¿Podrías indicarme tu número de cédula (10 dígitos)?`;
-    sesiones[phone].estado = 'esperandoCedula';
-  }
-
-  else if (estado === 'esperandoCedula') {
-    if (/^\d{10}$/.test(message)) {
-      sesiones[phone].cedula = message;
-      reply = `¡Gracias! Cédula registrada. Ahora, por favor indícame tu ubicación o urbanización.`;
-      sesiones[phone].estado = 'esperandoUbicacion';
-    } else {
-      reply = `La cédula debe tener exactamente 10 dígitos numéricos. Por favor vuelve a ingresarla.`;
-    }
-  }
-
-  else if (estado === 'esperandoUbicacion') {
-    sesiones[phone].ubicacion = rawMessage; // Guardamos ubicación original
-    reply = `Ubicación recibida: ${rawMessage}. ¿Deseas hacer un pedido de taxi ahora? Escribe "pedido" para continuar.`;
-    sesiones[phone].estado = 'pedido';
-  }
-
-  else if (estado === 'pedido') {
-    if (message.includes("pedido") || message.includes("taxi")) {
-      reply = `¡Perfecto! En breve un taxi de Route 593 te contactará. Gracias por usar nuestro sistema.`;
-      sesiones[phone].estado = 'finalizado';
-    } else {
-      reply = `Cuando estés listo, escribe "pedido" para solicitar el taxi.`;
-    }
-  }
-
-  else if (estado === 'finalizado') {
-    reply = `Gracias por usar Route 593. Si necesitas otro taxi, solo escribe "pedido".`;
-  }
+  console.log("Respuesta generada:", reply);
 
   return {
     statusCode: 200,
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json; charset=utf-8" },
     body: JSON.stringify({ reply })
   };
 }
