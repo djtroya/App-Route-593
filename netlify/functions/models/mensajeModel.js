@@ -1,23 +1,27 @@
 // netlify/functions/models/mensajeModel.js
-const fs = require('fs');
-const path = require('path');
+const { createClient } = require('@supabase/supabase-js');
 
-const filePath = path.join(__dirname, '../../../mensajes.json');
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-const guardarMensaje = (mensajeData) => {
-  let mensajes = [];
+const guardarMensaje = async (mensajeData) => {
+  const { data, error } = await supabase
+    .from('mensajes')
+    .insert([
+      {
+        mensaje: mensajeData.mensaje,
+        numero: mensajeData.numero,
+        fecha: new Date().toISOString(),
+      }
+    ]);
 
-  if (fs.existsSync(filePath)) {
-    mensajes = JSON.parse(fs.readFileSync(filePath));
+  if (error) {
+    console.error('Error al guardar mensaje en Supabase:', error);
+    throw new Error('No se pudo guardar el mensaje');
   }
 
-  mensajes.push({
-    mensaje: mensajeData.mensaje,
-    numero: mensajeData.numero,
-    fecha: new Date().toISOString(),
-  });
-
-  fs.writeFileSync(filePath, JSON.stringify(mensajes, null, 2));
+  console.log('Mensaje guardado en Supabase:', data);
 };
 
 module.exports = { guardarMensaje };
