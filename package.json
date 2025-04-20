@@ -1,6 +1,8 @@
 {
   "type": "module",
   "dependencies": {
-    "openai": "^4.0.0"
+    "openai": "^4.0.0",
+    "supabase-js": "^2.0.0",  // Agrega supabase-js
+    "axios": "^0.21.1"        // Si usas axios, también agrégalo
   }
 }
