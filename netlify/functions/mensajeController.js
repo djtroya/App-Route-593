@@ -26,7 +26,7 @@ async function procesarMensaje({ phone, message, cedula, location, urbanization,
     }]);
 
   if (error) {
-    console.error('Error al guardar los datos:', error);
+    console.error('Error al guardar los datos:', JSON.stringify(error,null,2));
     throw new Error('No se pudo guardar en la base de datos');
   }
 
