@@ -14,7 +14,7 @@ async function guardarDato(numero, campo, valor) {
       .single();
 
     if (errorExistente && errorExistente.code !== 'PGRST116') {
-      throw new Error(Error al verificar existencia: ${errorExistente.message});
+      throw new Error(`Error al verificar existencia: ${errorExistente.message}`);
     }
 
     if (existente) {
@@ -24,7 +24,7 @@ async function guardarDato(numero, campo, valor) {
         .eq('numero', numero);
 
       if (errorUpdate) {
-        throw new Error(Error al actualizar: ${errorUpdate.message});
+        throw new Error(`Error al actualizar: ${errorUpdate.message}`);
       }
     } else {
       const { error: errorInsert } = await client
@@ -48,10 +48,10 @@ async function obtenerCliente(numero) {
       .eq('numero', numero)
       .single();
 
-    if (error) throw new Error(Error al obtener cliente: ${error.message});
+    if (error) throw new Error(`Error al obtener cliente: ${error.message}`);
     return data;
   } catch (err) {
-    throw new Error(obtenerCliente() falló: ${err.message});
+    throw new Error(`obtenerCliente() falló: ${err.message}`);
   }
 }
 
