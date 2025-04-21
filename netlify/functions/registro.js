@@ -2,7 +2,7 @@ const { procesarMensaje } = require('./mensajeController');
 const querystring = require('querystring');
 
 // Función para enviar mensajes a WhatsAuto
-const enviarMensaje = async (phone, mensaje) => {
+const enviarMensaje = async (numero, mensaje) => {
   return {
     statusCode: 200,
     body: JSON.stringify({
@@ -11,19 +11,11 @@ const enviarMensaje = async (phone, mensaje) => {
   };
 };
 
-// Función para extraer campos desde el texto del mensaje
-const extraerCamposDesdeMensaje = (texto) => {
-  const cedula = texto.match(/C[eé]dula:\s*(\d{10})/i)?.[1];
-  const location = texto.match(/Ubicaci[oó]n:\s*(.+?)(?:Urbanizaci[oó]n:|Destino:|$)/i)?.[1]?.trim();
-  const urbanization = texto.match(/Urbanizaci[oó]n:\s*(.+?)(?:Destino:|$)/i)?.[1]?.trim();
-  const destination = texto.match(/Destino:\s*(.+)/i)?.[1]?.trim();
-  return { cedula, location, urbanization, destination };
-};
-
 exports.handler = async (event, context) => {
   let datos;
   const contentType = event.headers['content-type'] || event.headers['Content-Type'];
 
+  // Verificación del tipo de contenido
   if (contentType && contentType.includes('application/json')) {
     try {
       datos = JSON.parse(event.body);
@@ -42,49 +34,39 @@ exports.handler = async (event, context) => {
     };
   }
 
-  if (!datos.phone && datos.sender) {
-    datos.phone = datos.sender;
+  // Si viene como "sender", lo usamos como número
+  if (!datos.numero && datos.sender) {
+    datos.numero = datos.sender;
+  }
+  if (!datos.message && datos.body) {
+    datos.message = datos.body;
   }
 
-  // Extraer campos desde el mensaje si vienen todos pegados
-  if (datos.message) {
-    const extraidos = extraerCamposDesdeMensaje(datos.message);
-    datos.cedula = datos.cedula || extraidos.cedula;
-    datos.location = datos.location || extraidos.location;
-    datos.urbanization = datos.urbanization || extraidos.urbanization;
-    datos.destination = datos.destination || extraidos.destination;
+  // Verificamos si faltan datos
+  if (!datos.numero) {
+    return await enviarMensaje('', 'Falta el número del remitente.');
   }
-
-  // Verificamos los datos y pedimos lo que falta
-  if (!datos.cedula) {
-    return await enviarMensaje(datos.phone, "Por favor, ingresa tu cédula de identidad.");
-  }
-
-  if (!datos.location) {
-    return await enviarMensaje(datos.phone, "Por favor, ingresa tu ubicación.");
-  }
-
-  if (!datos.urbanization) {
-    return await enviarMensaje(datos.phone, "Por favor, ingresa tu urbanización.");
-  }
-
-  if (!datos.destination) {
-    return await enviarMensaje(datos.phone, "Por favor, ingresa tu destino.");
+  if (!datos.message) {
+    return await enviarMensaje(datos.numero, 'Por favor, envía tu mensaje con los datos.');
   }
 
   try {
-    await procesarMensaje(datos);
+    await procesarMensaje({
+      numero: datos.numero,
+      message: datos.message,
+    });
+
     return {
       statusCode: 200,
       body: JSON.stringify({
-        reply: Hola `{datos.sender || datos.phone}, tus datos han sido registrados exitosamente en Route 593.`,
+        reply: Hola ${datos.numero}, tus datos han sido registrados exitosamente en Route 593.,
       }),
     };
   } catch (error) {
     return {
       statusCode: 200,
       body: JSON.stringify({
-        reply: 'Ocurrió un error al guardar tus datos. Por favor, intenta nuevamente más tarde.',
+        reply: error.message || 'Hubo un error al procesar tus datos.',
       }),
     };
   }
