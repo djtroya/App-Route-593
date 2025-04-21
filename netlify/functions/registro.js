@@ -15,7 +15,7 @@ exports.handler = async (event) => {
 
   // Si no hay número, vamos a usar el campo `message` como la cédula
   const numero = datos.sender || 'Sin número';  // 'Sin número' en caso de que no venga el sender
-  const texto = datos.message?.trim();
+  const texto = String(datos.message || '').trim();
   if (!texto || texto.length !== 10 || !/^\d{10}$/.test(texto)) {
     return enviarMensaje(numero, 'Envía primero tu cédula (10 dígitos).');
   }
