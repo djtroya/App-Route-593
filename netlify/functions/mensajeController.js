@@ -32,7 +32,7 @@ async function guardarDato(numero, campo, valor) {
         .insert([{ numero, [campo]: valor }]);
 
       if (errorInsert) {
-        throw new Error(Error al insertar: ${errorInsert.message});
+        throw new Error(`Error al insertar: ${errorInsert.message}`);
       }
     }
   } catch (err) {
