@@ -7,27 +7,19 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 /**
  * Obtiene un cliente por su cédula.
- * @param {string} cedula - Cédula de 10 dígitos.
- * @returns {Promise<Object|null>} - Objeto cliente con { cedula, nombre } o null si no existe.
  */
 async function getClienteByCedula(cedula) {
-  try {
-    const { data, error } = await supabase
-      .from('clientes')
-      .select('cedula, nombre')
-      .eq('cedula', cedula)
-      .maybeSingle(); // más seguro que single()
-
-    if (error) {
-      console.error('Error en Supabase:', error);
-      return null;
-    }
-
-    return data;
-  } catch (err) {
-    console.error('Error inesperado en getClienteByCedula:', err.message);
-    return null;
+  const { data, error } = await supabase
+    .from('clientes')
+    .select('cedula, numero') // columnas reales
+    .eq('cedula', cedula)
+    .single();
+    
+  if (error && error.code !== 'PGRST116') {
+    console.error('Error en Supabase:', error);
+    throw error;
   }
+  return data;
 }
 
 module.exports = { getClienteByCedula };
