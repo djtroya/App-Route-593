@@ -36,7 +36,7 @@ async function guardarDato(numero, campo, valor) {
       }
     }
   } catch (err) {
-    throw new Error(guardarDato() falló: ${err.message});
+    throw new Error(`guardarDato() falló: ${err.message}`);
   }
 }
 
