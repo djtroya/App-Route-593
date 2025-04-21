@@ -22,6 +22,7 @@ exports.handler = async (event) => {
 
   // Ahora verificamos si la cédula ya está registrada
   const cliente = await getClienteByCedula(texto);
+  console.log('Cédula recibida:', texto);
   if (cliente) {
     return enviarMensaje(numero, `Hola ${cliente.nombre}, ya estás registrado. ¿En qué podemos ayudarte?`);
   }
