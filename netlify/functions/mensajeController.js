@@ -5,39 +5,40 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_API_KEY;
 const client = createClient(supabaseUrl, supabaseKey);
 
-// Función para extraer campos desde el texto del mensaje
-const extraerCamposDesdeMensaje = (texto) => {
-  const cedula = texto.match(/C[eé]dula:\s*(\d{10})/i)?.[1];
-  const ubicacion = texto.match(/Ubicaci[oó]n:\s*(.+?)(?:Urbanizaci[oó]n:|Destino:|$)/i)?.[1]?.trim();
-  const urbanizacion = texto.match(/Urbanizaci[oó]n:\s*(.+?)(?:Destino:|$)/i)?.[1]?.trim();
-  const destino = texto.match(/Destino:\s*(.+)/i)?.[1]?.trim();
-  return { cedula, ubicacion, urbanizacion, destino };
-};
-
-async function procesarMensaje({ numero, message }) {
-  if (!numero || !message) {
-    throw new Error('Faltan parámetros básicos: número o mensaje');
-  }
-
-  // Extraer datos desde el mensaje si están en formato de texto
-  const { cedula, ubicacion, urbanizacion, destino } = extraerCamposDesdeMensaje(message);
-
-  // Verificar que no falte nada
-  if (!cedula) throw new Error('Por favor, ingresa tu cédula de identidad.');
-  if (!ubicacion) throw new Error('Por favor, ingresa tu ubicación.');
-  if (!urbanizacion) throw new Error('Por favor, ingresa tu urbanización.');
-  if (!destino) throw new Error('Por favor, ingresa tu destino.');
-
-  const { data, error } = await client
+async function guardarDato(numero, campo, valor) {
+  // Verifica si el número ya existe
+  const { data: existente } = await client
     .from('clientes')
-    .insert([{ cedula, ubicacion, urbanizacion, destino, mensaje: message, numero }]);
+    .select('*')
+    .eq('numero', numero)
+    .single();
 
-  if (error) {
-    console.error('Error al guardar los datos:', error);
-    throw new Error('No se pudo guardar en la base de datos.');
+  if (existente) {
+    // Actualiza solo el campo nuevo
+    const { error } = await client
+      .from('clientes')
+      .update({ [campo]: valor })
+      .eq('numero', numero);
+
+    if (error) throw error;
+  } else {
+    // Crea un nuevo registro con el campo inicial
+    const { error } = await client
+      .from('clientes')
+      .insert([{ numero, [campo]: valor }]);
+
+    if (error) throw error;
   }
-
-  console.log('Datos guardados correctamente:', data);
 }
 
-module.exports = { procesarMensaje };
+async function obtenerCliente(numero) {
+  const { data } = await client
+    .from('clientes')
+    .select('*')
+    .eq('numero', numero)
+    .single();
+
+  return data;
+}
+
+module.exports = { guardarDato, obtenerCliente };
