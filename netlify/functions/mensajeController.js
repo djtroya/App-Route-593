@@ -46,7 +46,7 @@ async function obtenerCliente(numero) {
       .from('clientes')
       .select('*')
       .eq('numero', numero)
-      .single();
+      .maybeSingle();
 
     if (error) throw new Error(`Error al obtener cliente: ${error.message}`);
     return data;
