@@ -7,7 +7,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 async function getClienteByCedula(cedula) {
   const { data, error } = await supabase
     .from('clientes')
-    .select('cedula') // solo seleccionamos lo que seguro existe
+    .select('cedula, nombre') // solo seleccionamos lo que seguro existe
     .eq('cedula', cedula)
     .limit(1);
 
