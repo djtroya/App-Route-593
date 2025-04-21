@@ -9,14 +9,16 @@ async function getClienteByCedula(cedula) {
     .from('clientes')
     .select('cedula') // solo seleccionamos lo que seguro existe
     .eq('cedula', cedula)
-    .single();
+    .limit(1);
 
   if (error && error.code !== 'PGRST116') {
     console.error('Error en Supabase:', error);
     throw error;
   }
-  console.log('Resultado Supabase:', data);
-  return data;
+
+ const cliente = data?.[0] || null;
+  console.log('Resultado Supabase:', cliente);
+  return cliente;
 }
 
 module.exports = { getClienteByCedula };
