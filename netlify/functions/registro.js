@@ -3,17 +3,15 @@ const querystring = require('querystring');
 
 exports.handler = async (event, context) => {
   let datos;
-
   const contentType = event.headers['content-type'] || event.headers['Content-Type'];
 
   if (contentType && contentType.includes('application/json')) {
     try {
       datos = JSON.parse(event.body);
     } catch (error) {
-      console.error('Error al parsear JSON:', error);
       return {
         statusCode: 400,
-        body: JSON.stringify({ message: 'Cuerpo inválido, se esperaba JSON.' }),
+        body: JSON.stringify({ reply: 'El mensaje no tiene el formato esperado (JSON inválido).' }),
       };
     }
   } else if (contentType && contentType.includes('application/x-www-form-urlencoded')) {
@@ -21,28 +19,29 @@ exports.handler = async (event, context) => {
   } else {
     return {
       statusCode: 400,
-      body: JSON.stringify({ message: 'Tipo de contenido no soportado.' }),
+      body: JSON.stringify({ reply: 'Tipo de contenido no soportado.' }),
     };
   }
 
-  // Mapear 'sender' como 'phone' si no existe directamente
+  // Si viene como "sender", lo usamos como "phone"
   if (!datos.phone && datos.sender) {
     datos.phone = datos.sender;
   }
-
-  console.log('Datos recibidos:', datos);
 
   try {
     await procesarMensaje(datos);
     return {
       statusCode: 200,
-      body: JSON.stringify({ message: 'Datos procesados correctamente.' }),
+      body: JSON.stringify({
+        reply: Hola ${datos.sender || datos.phone}, tus datos han sido registrados exitosamente en Route 593.,
+      }),
     };
   } catch (error) {
-    console.error('Error procesando:', error);
     return {
-      statusCode: 500,
-      body: JSON.stringify({ message: 'Error procesando los datos.' }),
+      statusCode: 200,
+      body: JSON.stringify({
+        reply: 'Faltan datos o el formato es incorrecto. Por favor envía: Cédula, Ubicación, Urbanización y Destino.',
+      }),
     };
   }
 };
