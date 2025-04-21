@@ -15,6 +15,7 @@ async function getClienteByCedula(cedula) {
     console.error('Error en Supabase:', error);
     throw error;
   }
+  console.log('Resultado Supabase:', data);
   return data;
 }
 
