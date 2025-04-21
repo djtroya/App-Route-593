@@ -5,7 +5,7 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_API_KEY;
 const client = createClient(supabaseUrl, supabaseKey);
 
-// Función para extraer campos desde el texto del mensaje
+// Extraer campos si vienen en un solo mensaje
 const extraerCamposDesdeMensaje = (texto) => {
   const cedula = texto.match(/C[eé]dula:\s*(\d{10})/i)?.[1];
   const ubicacion = texto.match(/Ubicaci[oó]n:\s*(.+?)(?:Urbanizaci[oó]n:|Destino:|$)/i)?.[1]?.trim();
@@ -14,29 +14,47 @@ const extraerCamposDesdeMensaje = (texto) => {
   return { cedula, ubicacion, urbanizacion, destino };
 };
 
-async function procesarMensaje({ phone, message }) {
-  if (!phone || !message) {
-    throw new Error('Faltan parámetros básicos: phone o message');
+async function procesarMensaje({ numero, message }) {
+  if (!numero || !message) {
+    throw new Error('Faltan parámetros básicos: numero o message');
   }
 
-  // Extraer datos desde el mensaje si están en formato de texto
-  const { cedula, ubicacion, urbanizacion, destino } = extraerCamposDesdeMensaje(message);
-
-  // Verificar que no falte nada
-  if (!cedula || !ubicacion || !urbanizacion || !destino) {
-    throw new Error('Faltan parámetros: cedula, ubicacion, urbanizacion o destino');
-  }
-
-  const { data, error } = await client
+  // Verificar si ya existe registro
+  let { data: registros, error } = await client
     .from('clientes')
-    .insert([{ cedula, ubicacion, urbanizacion, destino, mensaje: message, telefono: phone }]);
+    .select('*')
+    .eq('numero', numero)
+    .order('created_at', { ascending: false })
+    .limit(1);
 
-  if (error) {
-    console.error('Error al guardar los datos:', error);
-    throw new Error('No se pudo guardar en la base de datos');
+  if (error) throw new Error('Error al consultar Supabase');
+
+  const registro = registros?.[0] || {};
+  const extraidos = extraerCamposDesdeMensaje(message);
+
+  // Priorizar lo nuevo si se escribió explícitamente
+  const cedula = extraidos.cedula || registro.cedula;
+  const ubicacion = extraidos.ubicacion || registro.ubicacion;
+  const urbanizacion = extraidos.urbanizacion || registro.urbanizacion;
+  const destino = extraidos.destino || registro.destino;
+
+  // Verificar qué falta
+  if (!cedula) throw new Error('cedula');
+  if (!ubicacion) throw new Error('ubicacion');
+  if (!urbanizacion) throw new Error('urbanizacion');
+  if (!destino) throw new Error('destino');
+
+  // Ya tiene todo: guardamos
+  const { error: insertError } = await client
+    .from('clientes')
+    .insert([{ numero, cedula, ubicacion, urbanizacion, destino, mensaje: message }]);
+
+  if (insertError) {
+    console.error('Error al guardar en Supabase:', insertError);
+    throw new Error('error_guardando');
   }
 
-  console.log('Datos guardados correctamente:', data);
+  return { exito: true };
 }
 
 module.exports = { procesarMensaje };
