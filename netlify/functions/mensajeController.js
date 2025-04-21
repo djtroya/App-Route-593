@@ -6,39 +6,53 @@ const supabaseKey = process.env.SUPABASE_API_KEY;
 const client = createClient(supabaseUrl, supabaseKey);
 
 async function guardarDato(numero, campo, valor) {
-  // Verifica si el número ya existe
-  const { data: existente } = await client
-    .from('clientes')
-    .select('*')
-    .eq('numero', numero)
-    .single();
-
-  if (existente) {
-    // Actualiza solo el campo nuevo
-    const { error } = await client
+  try {
+    const { data: existente, error: errorExistente } = await client
       .from('clientes')
-      .update({ [campo]: valor })
-      .eq('numero', numero);
+      .select('*')
+      .eq('numero', numero)
+      .single();
 
-    if (error) throw error;
-  } else {
-    // Crea un nuevo registro con el campo inicial
-    const { error } = await client
-      .from('clientes')
-      .insert([{ numero, [campo]: valor }]);
+    if (errorExistente && errorExistente.code !== 'PGRST116') {
+      throw new Error(Error al verificar existencia: ${errorExistente.message});
+    }
 
-    if (error) throw error;
+    if (existente) {
+      const { error: errorUpdate } = await client
+        .from('clientes')
+        .update({ [campo]: valor })
+        .eq('numero', numero);
+
+      if (errorUpdate) {
+        throw new Error(Error al actualizar: ${errorUpdate.message});
+      }
+    } else {
+      const { error: errorInsert } = await client
+        .from('clientes')
+        .insert([{ numero, [campo]: valor }]);
+
+      if (errorInsert) {
+        throw new Error(Error al insertar: ${errorInsert.message});
+      }
+    }
+  } catch (err) {
+    throw new Error(guardarDato() falló: ${err.message});
   }
 }
 
 async function obtenerCliente(numero) {
-  const { data } = await client
-    .from('clientes')
-    .select('*')
-    .eq('numero', numero)
-    .single();
+  try {
+    const { data, error } = await client
+      .from('clientes')
+      .select('*')
+      .eq('numero', numero)
+      .single();
 
-  return data;
+    if (error) throw new Error(Error al obtener cliente: ${error.message});
+    return data;
+  } catch (err) {
+    throw new Error(obtenerCliente() falló: ${err.message});
+  }
 }
 
 module.exports = { guardarDato, obtenerCliente };
