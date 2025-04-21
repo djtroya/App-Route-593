@@ -77,7 +77,7 @@ exports.handler = async (event, context) => {
     return {
       statusCode: 200,
       body: JSON.stringify({
-        reply: Hola ${datos.sender || datos.phone}, tus datos han sido registrados exitosamente en Route 593.,
+        reply: Hola `{datos.sender || datos.phone}, tus datos han sido registrados exitosamente en Route 593.`,
       }),
     };
   } catch (error) {
