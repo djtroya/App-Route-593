@@ -13,6 +13,9 @@ exports.handler = async (event) => {
   else if (ct.includes('application/x-www-form-urlencoded')) datos = querystring.parse(event.body);
   else return { statusCode: 400, body: JSON.stringify({ reply: 'Tipo de contenido no soportado.' }) };
 
+  console.log('Cuerpo recibido:', event.body); // NUEVA línea
+  console.log('Datos parseados:', datos);      // NUEVA línea
+
   // Si no hay número, vamos a usar el campo `message` como la cédula
   const numero = datos.sender || 'Sin número';  // 'Sin número' en caso de que no venga el sender
   const texto = String(datos.message || '').trim();
