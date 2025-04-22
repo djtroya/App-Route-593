@@ -5,54 +5,45 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_API_KEY;
 const client = createClient(supabaseUrl, supabaseKey);
 
-async function guardarDato(numero, campo, valor) {
-  try {
-    const { data: existente, error: errorExistente } = await client
+const enviarMensaje = (numero, mensaje) => ({
+  statusCode: 200,
+  body: JSON.stringify({ reply: mensaje, to: numero }),
+});
+
+exports.handler = async (event) => {
+  const params = new URLSearchParams(event.body);
+  const numero = params.get('phone');
+  const mensaje = params.get('message');
+
+  console.log('Cuerpo recibido:', event.body);
+  console.log('Número:', numero);
+  console.log('Mensaje:', mensaje);
+
+  // Si el mensaje es un número de 10 dígitos (posible cédula)
+  if (mensaje.length === 10 && !isNaN(mensaje)) {
+    // Verificar si es una cédula registrada en la base de datos
+    const { data: clientes, error } = await client
       .from('clientes')
       .select('*')
-      .eq('numero', numero)
-      .single();
+      .eq('cedula', mensaje);
 
-    if (errorExistente && errorExistente.code !== 'PGRST116') {
-      throw new Error(`Error al verificar existencia: ${errorExistente.message}`);
+    if (error) {
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: 'Error al consultar la base de datos' }),
+      };
     }
 
-    if (existente) {
-      const { error: errorUpdate } = await client
-        .from('clientes')
-        .update({ [campo]: valor })
-        .eq('numero', numero);
-
-      if (errorUpdate) {
-        throw new Error(`Error al actualizar: ${errorUpdate.message}`);
-      }
+    if (clientes.length > 0) {
+      // Si se encuentra la cédula en la base de datos
+      const mensajeCédula = `Cédula registrada. Nombre: ${clientes[0].nombre}`;
+      return enviarMensaje(numero, mensajeCédula);
     } else {
-      const { error: errorInsert } = await client
-        .from('clientes')
-        .insert([{ numero, [campo]: valor }]);
-
-      if (errorInsert) {
-        throw new Error(`Error al insertar: ${errorInsert.message}`);
-      }
+      // Si no se encuentra la cédula, se considera un número de teléfono
+      return enviarMensaje(numero, 'Cédula no registrada. ¿En qué puedo ayudarte?');
     }
-  } catch (err) {
-    throw new Error(`guardarDato() falló: ${err.message}`);
+  } else {
+    // Si el mensaje es texto normal (no cédula), respondemos el mensaje directamente
+    return enviarMensaje(numero, `Recibido: ${mensaje}`);
   }
-}
-
-async function obtenerCliente(numero) {
-  try {
-    const { data, error } = await client
-      .from('clientes')
-      .select('*')
-      .eq('numero', numero)
-      .maybeSingle();
-
-    if (error) throw new Error(`Error al obtener cliente: ${error.message}`);
-    return data;
-  } catch (err) {
-    throw new Error(`obtenerCliente() falló: ${err.message}`);
-  }
-}
-
-module.exports = { guardarDato, obtenerCliente };
+};
