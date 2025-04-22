@@ -13,11 +13,12 @@ exports.handler = async (event, context) => {
       const body = querystring.parse(event.body);
       console.log("Datos recibidos:", body); // Log para verificar los datos que llegan
 
-      const { app, sender, message } = body;
+      // Asegúrate de que estás extrayendo todos los parámetros necesarios
+      const { app, sender, phone, message } = body;
 
       // Validamos que los datos necesarios estén presentes
-      if (!sender || !message) {
-        console.log("Faltan campos: sender o message"); // Log para verificar qué campos faltan
+      if (!sender || !message || !app) {
+        console.log("Faltan campos: sender o message o app"); // Log para verificar qué campos faltan
         return {
           statusCode: 400,
           body: JSON.stringify({ error: 'Faltan campos requeridos' }),
@@ -32,7 +33,7 @@ exports.handler = async (event, context) => {
             sender: sender,
             message: message,
             app: app,
-            phone: phone,
+            phone: phone,  // Asegúrate de que la columna 'phone' exista en Supabase
             fecha_creacion: new Date(), // Fecha y hora de creación
           },
         ]);
