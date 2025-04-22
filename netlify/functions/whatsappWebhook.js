@@ -32,6 +32,7 @@ exports.handler = async (event, context) => {
             sender: sender,
             message: message,
             app: app,
+            phone: phone,
             fecha_creacion: new Date(), // Fecha y hora de creación
           },
         ]);
