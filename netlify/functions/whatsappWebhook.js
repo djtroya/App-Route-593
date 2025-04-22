@@ -1,6 +1,6 @@
 const { createClient } = require('@supabase/supabase-js');
+const querystring = require('querystring');
 
-// Variables de entorno
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_API_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -10,12 +10,12 @@ exports.handler = async (event, context) => {
     try {
       console.log("Raw body:", event.body);
 
-      const body = JSON.parse(event.body);
+      // Parsear formato x-www-form-urlencoded
+      const body = querystring.parse(event.body);
       const { app, sender, message, phone, cedula, ubicacion, destino, urbanizacion } = body;
 
       console.log("Datos recibidos:", { app, sender, message, phone, cedula, ubicacion, destino, urbanizacion });
 
-      // Inserción mínima por ahora para probar
       const { data, error } = await supabase
         .from('clientes')
         .insert([
