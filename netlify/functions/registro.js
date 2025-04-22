@@ -1,9 +1,19 @@
-const enviarMensaje = (numero, mensaje) => ({
-  statusCode: 200,
-  body: JSON.stringify({ reply: mensaje }),
-});
-
 exports.handler = async (event) => {
+  const params = new URLSearchParams(event.body);
+  const numero = params.get('phone');
+  const mensaje = params.get('message');
+
   console.log('Cuerpo recibido:', event.body);
-  return enviarMensaje('0000000000', '¡Hola! Esta es una respuesta de prueba desde el backend.');
+  console.log('Número:', numero);
+  console.log('Mensaje:', mensaje);
+
+  const respuesta = `Recibido: ${mensaje}`;
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify({
+      reply: respuesta,
+      to: numero,
+    }),
+  };
 };
