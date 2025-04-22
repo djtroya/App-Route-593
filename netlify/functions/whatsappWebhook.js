@@ -1,4 +1,5 @@
 const { createClient } = require('@supabase/supabase-js');
+const querystring = require('querystring');
 
 // Variables de entorno para conectarse a Supabase
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -8,8 +9,8 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 exports.handler = async (event, context) => {
   if (event.httpMethod === 'POST') {
     try {
-      // Parseamos el cuerpo de la solicitud
-      const body = JSON.parse(event.body);
+      // Si los datos están en formato application/x-www-form-urlencoded, usamos querystring
+      const body = querystring.parse(event.body);
       console.log("Datos recibidos:", body); // Log para verificar los datos que llegan
 
       const { app, sender, message } = body;
