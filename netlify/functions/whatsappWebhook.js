@@ -1,5 +1,4 @@
 const { createClient } = require('@supabase/supabase-js');
-const querystring = require('querystring');
 
 // Variables de entorno para conectarse a Supabase
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -9,16 +8,16 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 exports.handler = async (event, context) => {
   if (event.httpMethod === 'POST') {
     try {
-      // Si los datos están en formato application/x-www-form-urlencoded, usamos querystring
-      const body = querystring.parse(event.body);
-      console.log("Datos recibidos:", body); // Log para verificar los datos que llegan
+      // Parseamos el cuerpo de la solicitud
+      const body = JSON.parse(event.body);
+      const { app, sender, message, phone, cedula, ubicacion, destino, urbanizacion } = body;
 
-      // Asegúrate de que estás extrayendo todos los parámetros necesarios
-      const { app, sender, phone, message } = body;
+      // Verificamos si los datos de sender y phone contienen la información real del cliente
+      const senderInfo = sender !== 'WhatsAuto' ? sender : 'Desconocido';
+      const phoneInfo = phone !== 'WhatsAuto' ? phone : 'Desconocido';
 
       // Validamos que los datos necesarios estén presentes
-      if (!sender || !message || !app) {
-        console.log("Faltan campos: sender o message o app"); // Log para verificar qué campos faltan
+      if (!cedula || !ubicacion || !destino || !urbanizacion) {
         return {
           statusCode: 400,
           body: JSON.stringify({ error: 'Faltan campos requeridos' }),
@@ -30,24 +29,25 @@ exports.handler = async (event, context) => {
         .from('clientes') // Nombre de la tabla en Supabase
         .insert([
           {
-            sender: sender,
+            sender: senderInfo,
             message: message,
             app: app,
-            phone: phone,  // Asegúrate de que la columna 'phone' exista en Supabase
+            phone: phoneInfo,
+            cedula: cedula,
+            ubicacion: ubicacion,
+            destino: destino,
+            urbanizacion: urbanizacion,
             fecha_creacion: new Date(), // Fecha y hora de creación
           },
         ]);
 
-      // Verificamos si hubo error al insertar en Supabase
+      // Manejo de errores si no se pudo guardar
       if (error) {
-        console.error("Error al guardar en Supabase:", error); // Log del error al guardar en Supabase
         return {
           statusCode: 500,
           body: JSON.stringify({ error: 'Error al guardar en Supabase' }),
         };
       }
-
-      console.log("Datos guardados en Supabase:", data); // Log de los datos guardados
 
       // Respuesta con un mensaje de éxito
       return {
@@ -55,7 +55,6 @@ exports.handler = async (event, context) => {
         body: JSON.stringify({ reply: "¡Gracias por tu mensaje! Lo hemos recibido." }),
       };
     } catch (error) {
-      console.error("Error al procesar la solicitud:", error); // Log del error general
       return {
         statusCode: 500,
         body: JSON.stringify({ error: 'Error al procesar la solicitud' }),
