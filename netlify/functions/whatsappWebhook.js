@@ -14,7 +14,6 @@ exports.handler = async (event) => {
   }
 
   try {
-    // Parseamos el cuerpo como x-www-form-urlencoded
     const rawBody = event.body;
     console.log('Raw body:', rawBody);
     const params = querystring.parse(rawBody);
@@ -26,18 +25,26 @@ exports.handler = async (event) => {
 
     // Inicializamos el estado si no existe
     if (!estadoConversacion[numero]) {
-      estadoConversacion[numero] = { paso: 1, datos: { phone: numero, app, sender } };
+      estadoConversacion[numero] = { paso: 1, datos: { numero, app, sender, phone } };
+
+      const cedulaInicial = message.trim();
+      if (!/^\d{10}$/.test(cedulaInicial)) {
+        return responder('Bienvenido a Route 593. Por favor, ingresa una cédula válida de 10 dígitos.');
+      }
+
+      estadoConversacion[numero].datos.cedula = cedulaInicial;
+      estadoConversacion[numero].paso = 2;
+      return responder('Gracias. ¿Cuál es tu ubicación?');
     }
 
     const estado = estadoConversacion[numero];
 
     switch (estado.paso) {
       case 1:
-        const cedula = message.trim();
-        if (!/^\d{10}$/.test(cedula)) {
+        if (!/^\d{10}$/.test(message.trim())) {
           return responder('Por favor, ingresa una cédula válida de 10 dígitos.');
         }
-        estado.datos.cedula = cedula;
+        estado.datos.cedula = message.trim();
         estado.paso++;
         return responder('Gracias. ¿Cuál es tu ubicación?');
 
@@ -67,7 +74,6 @@ exports.handler = async (event) => {
 
         console.log('Datos guardados en Supabase:', data);
 
-        // Limpiamos el estado
         delete estadoConversacion[numero];
         return responder('¡Tu viaje ha sido registrado con éxito! Pronto te contactaremos.');
 
@@ -81,6 +87,7 @@ exports.handler = async (event) => {
         body: JSON.stringify({ reply: texto }),
       };
     }
+
   } catch (error) {
     console.error('Error general:', error);
     return {
