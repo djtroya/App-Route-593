@@ -22,7 +22,6 @@ exports.handler = async (event) => {
 
   try {
     const rawBody = event.body;
-    console.log('Raw body:', rawBody);
     const params = querystring.parse(rawBody);
 
     const { app, sender, phone, message } = params;
@@ -31,19 +30,24 @@ exports.handler = async (event) => {
     console.log('Datos recibidos:', { app, sender, message, phone });
 
     if (!estadoConversacion[numero]) {
-      estadoConversacion[numero] = { paso: 1, datos: { numero, app, sender, phone } };
+      estadoConversacion[numero] = {
+        paso: 1,
+        datos: {
+          phone, // Aquí usamos "phone" directamente
+          app,
+          sender
+        }
+      };
     }
 
     const estado = estadoConversacion[numero];
 
-    // Flujo de conversación
     switch (estado.paso) {
       case 1:
-        const cedulaDetectada = message.match(/\d{10}/);
-        if (!cedulaDetectada) {
+        if (!/^\d{10}$/.test(message.trim())) {
           return responder('Bienvenido a Route 593. Por favor, ingresa una cédula válida de 10 dígitos.');
         }
-        estado.datos.cedula = cedulaDetectada[0];
+        estado.datos.cedula = message.trim();
         estado.paso++;
         return responder('Gracias. ¿Cuál es tu ubicación?');
 
