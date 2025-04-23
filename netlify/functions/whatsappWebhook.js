@@ -8,7 +8,6 @@ const supabase = createClient(
 
 const estadoConversacion = {}; // Memoria temporal por número
 
-// Función responder definida antes
 function responder(texto) {
   return {
     statusCode: 200,
@@ -31,7 +30,6 @@ exports.handler = async (event) => {
 
     console.log('Datos recibidos:', { app, sender, message, phone });
 
-    // Creamos el estado si no existe aún
     if (!estadoConversacion[numero]) {
       estadoConversacion[numero] = { paso: 1, datos: { numero, app, sender, phone } };
     }
@@ -41,10 +39,11 @@ exports.handler = async (event) => {
     // Flujo de conversación
     switch (estado.paso) {
       case 1:
-        if (!/^\d{10}$/.test(message.trim())) {
+        const cedulaDetectada = message.match(/\d{10}/);
+        if (!cedulaDetectada) {
           return responder('Bienvenido a Route 593. Por favor, ingresa una cédula válida de 10 dígitos.');
         }
-        estado.datos.cedula = message.trim();
+        estado.datos.cedula = cedulaDetectada[0];
         estado.paso++;
         return responder('Gracias. ¿Cuál es tu ubicación?');
 
