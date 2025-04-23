@@ -26,7 +26,7 @@ exports.handler = async (event) => {
 
     // Inicializamos el estado si no existe
     if (!estadoConversacion[numero]) {
-      estadoConversacion[numero] = { paso: 1, datos: { numero } };
+      estadoConversacion[numero] = { paso: 1, datos: { phone } };
     }
 
     const estado = estadoConversacion[numero];
