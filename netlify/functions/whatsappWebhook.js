@@ -26,14 +26,18 @@ exports.handler = async (event) => {
 
     // Inicializamos el estado si no existe
     if (!estadoConversacion[numero]) {
-      estadoConversacion[numero] = { paso: 1, datos: { phone } };
+      estadoConversacion[numero] = { paso: 1, datos: { phone: numero, app, sender } };
     }
 
     const estado = estadoConversacion[numero];
 
     switch (estado.paso) {
       case 1:
-        estado.datos.cedula = message.trim();
+        const cedula = message.trim();
+        if (!/^\d{10}$/.test(cedula)) {
+          return responder('Por favor, ingresa una cédula válida de 10 dígitos.');
+        }
+        estado.datos.cedula = cedula;
         estado.paso++;
         return responder('Gracias. ¿Cuál es tu ubicación?');
 
