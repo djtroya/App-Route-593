@@ -26,15 +26,6 @@ exports.handler = async (event) => {
     // Inicializamos el estado si no existe
     if (!estadoConversacion[numero]) {
       estadoConversacion[numero] = { paso: 1, datos: { numero, app, sender, phone } };
-
-      const cedulaInicial = message.trim();
-      if (!/^\d{10}$/.test(cedulaInicial)) {
-        return responder('Bienvenido a Route 593. Por favor, ingresa una cédula válida de 10 dígitos.');
-      }
-
-      estadoConversacion[numero].datos.cedula = cedulaInicial;
-      estadoConversacion[numero].paso = 2;
-      return responder('Gracias. ¿Cuál es tu ubicación?');
     }
 
     const estado = estadoConversacion[numero];
@@ -42,7 +33,7 @@ exports.handler = async (event) => {
     switch (estado.paso) {
       case 1:
         if (!/^\d{10}$/.test(message.trim())) {
-          return responder('Por favor, ingresa una cédula válida de 10 dígitos.');
+          return responder('Bienvenido a Route 593. Por favor, ingresa una cédula válida de 10 dígitos.');
         }
         estado.datos.cedula = message.trim();
         estado.paso++;
@@ -62,7 +53,6 @@ exports.handler = async (event) => {
         estado.datos.destino = message.trim();
         estado.paso++;
 
-        // Guardamos en Supabase
         const { data, error } = await supabase
           .from('clientes')
           .insert([estado.datos]);
