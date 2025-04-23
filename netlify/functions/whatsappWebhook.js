@@ -31,7 +31,7 @@ exports.handler = async (event) => {
     console.log('Datos recibidos:', { app, sender, message, phone });
 
     if (!estadoConversacion[numero]) {
-      estadoConversacion[numero] = { paso: 1, datos: { numero, app, sender, phone } };
+      estadoConversacion[numero] = { paso: 1, datos: { phone, app, sender, phone } };
     }
 
     const estado = estadoConversacion[numero];
