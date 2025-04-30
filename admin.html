@@ -55,7 +55,7 @@
     <thead>
       <tr>
         <th>Cédula</th>
-        <th>Número</th>
+        <th>Teléfono</th>
         <th>Ubicación</th>
         <th>Urbanización</th>
         <th>Destino</th>
@@ -79,10 +79,11 @@
         data.forEach(cliente => {
           const fila = document.createElement('tr');
 
-          ['cedula', 'numero', 'ubicacion', 'urbanizacion', 'destino', 'mensaje'].forEach(campo => {
+          // Aseguramos que los campos coincidan con los de la base de datos
+          ['cedula', 'phone', 'ubicacion', 'urbanizacion', 'destino', 'message'].forEach(campo => {
             const celda = document.createElement('td');
             const input = document.createElement('input');
-            input.value = cliente[campo] || '';
+            input.value = cliente[campo] || '';  // Si el campo no tiene valor, lo dejamos vacío
             input.className = 'editable';
             input.dataset.campo = campo;
             celda.appendChild(input);
