@@ -15,6 +15,7 @@
     h1 {
       color: #333;
       text-align: center;
+      font-size: 1.5rem;
     }
     table {
       width: 100%;
@@ -23,6 +24,7 @@
       background: #ffffff;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       border-radius: 8px;
+      overflow-x: auto;
     }
     th, td {
       padding: 0.75rem;
@@ -38,12 +40,13 @@
     td {
       background-color: #f9f9f9;
     }
-    input, button {
+    input {
+      width: 100%;
+      box-sizing: border-box;
       padding: 0.5rem;
-      margin: 0.25rem;
       font-size: 14px;
       border-radius: 4px;
-      border: 1px solid #ddd;
+      border: 1px solid #ccc;
     }
     .editable {
       background-color: #fff3cd;
@@ -52,13 +55,58 @@
       background-color: #28a745;
       color: white;
       border: none;
+      padding: 0.5rem 1rem;
+      font-size: 14px;
+      border-radius: 4px;
       cursor: pointer;
     }
     .btn-guardar:hover {
       background-color: #218838;
     }
-    .btn-guardar:disabled {
-      background-color: #ccc;
+
+    /* Responsividad */
+    @media (max-width: 768px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+
+      thead {
+        display: none;
+      }
+
+      tr {
+        margin-bottom: 1rem;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 0.5rem;
+      }
+
+      td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem;
+        border: none;
+        border-bottom: 1px solid #eee;
+      }
+
+      td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        flex: 1;
+        padding-right: 1rem;
+        text-transform: capitalize;
+      }
+
+      input {
+        flex: 2;
+      }
+
+      .btn-guardar {
+        width: 100%;
+        margin-top: 0.5rem;
+      }
     }
   </style>
 </head>
@@ -94,8 +142,9 @@
 
           ['cedula', 'phone', 'ubicacion', 'urbanizacion', 'destino', 'message'].forEach(campo => {
             const celda = document.createElement('td');
+            celda.setAttribute('data-label', campo);
             const input = document.createElement('input');
-            input.value = cliente[campo] || '';  // Si el campo no tiene valor, lo dejamos vacío
+            input.value = cliente[campo] || '';
             input.className = 'editable';
             input.dataset.campo = campo;
             celda.appendChild(input);
@@ -103,6 +152,7 @@
           });
 
           const celdaBoton = document.createElement('td');
+          celdaBoton.setAttribute('data-label', 'acción');
           const botonGuardar = document.createElement('button');
           botonGuardar.textContent = 'Guardar';
           botonGuardar.className = 'btn-guardar';
