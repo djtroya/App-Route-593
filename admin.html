@@ -7,93 +7,64 @@
   <link rel="stylesheet" href="style.css" />
   <style>
     body {
-      font-family: 'Roboto', sans-serif;
+      font-family: sans-serif;
       margin: 0;
       padding: 1rem;
-      background: #f9f9f9;
-      color: #333;
+      background: #f4f4f4;
     }
     h1 {
       color: #333;
       text-align: center;
-      margin-bottom: 2rem;
     }
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 1rem;
       background: white;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     }
     th, td {
-      padding: 1rem;
-      border: 1px solid #ddd;
+      padding: 0.75rem;
+      border: 1px solid #ccc;
       text-align: left;
     }
     th {
-      background-color: #2c3e50;
+      background: #333;
       color: white;
-      font-weight: 600;
     }
-    td {
-      background-color: #ecf0f1;
-    }
-    td input {
-      width: 100%;
+    input, button {
       padding: 0.5rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      box-sizing: border-box;
-      background-color: #fff;
-    }
-    td input:focus {
-      border-color: #3498db;
-      outline: none;
-    }
-    .btn-guardar {
-      background-color: #3498db;
-      color: white;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      cursor: pointer;
-      border-radius: 4px;
-      transition: background-color 0.3s;
-    }
-    .btn-guardar:hover {
-      background-color: #2980b9;
-    }
-    .btn-guardar:disabled {
-      background-color: #bdc3c7;
-      cursor: not-allowed;
+      margin: 0.25rem;
     }
     .editable {
-      background-color: #ffffff;
+      background-color: #ffffdd;
     }
-    .table-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      overflow-x: auto;
+    .btn-guardar {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-guardar:hover {
+      background-color: #218838;
     }
   </style>
 </head>
 <body>
   <h1>Panel de Clientes - Route 593</h1>
-  <div class="table-container">
-    <table id="tabla-clientes">
-      <thead>
-        <tr>
-          <th>Cédula</th>
-          <th>Número</th>
-          <th>Ubicación</th>
-          <th>Urbanización</th>
-          <th>Destino</th>
-          <th>Mensaje</th>
-          <th>Acción</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
+  <table id="tabla-clientes">
+    <thead>
+      <tr>
+        <th>Cédula</th>
+        <th>Teléfono</th>
+        <th>Ubicación</th>
+        <th>Urbanización</th>
+        <th>Destino</th>
+        <th>Mensaje</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
   <script>
     const API_URL = '/.netlify/functions/panelClientes';
@@ -108,10 +79,11 @@
         data.forEach(cliente => {
           const fila = document.createElement('tr');
 
-          ['cedula', 'numero', 'ubicacion', 'urbanizacion', 'destino', 'mensaje'].forEach(campo => {
+          // Aseguramos que los campos coincidan con los de la base de datos
+          ['cedula', 'phone', 'ubicacion', 'urbanizacion', 'destino', 'message'].forEach(campo => {
             const celda = document.createElement('td');
             const input = document.createElement('input');
-            input.value = cliente[campo] || '';
+            input.value = cliente[campo] || '';  // Si el campo no tiene valor, lo dejamos vacío
             input.className = 'editable';
             input.dataset.campo = campo;
             celda.appendChild(input);
