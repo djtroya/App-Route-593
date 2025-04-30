@@ -1,14 +1,6 @@
-const express = require('express');
-const router = express.Router();
-const {
-  listarClientes,
-  editarCliente,
-} = require('../controllers/clientesController');
+// /netlify/functions/routes/clientes.js
+const { handler } = require('../controllers/clientesController');
 
-// Ruta para obtener todos los clientes
-router.get('/', listarClientes);
-
-// Ruta para editar un cliente por ID
-router.put('/:id', editarCliente);
-
-module.exports = router;
+exports.handler = async (event, context) => {
+  return handler(event, context);
+};
