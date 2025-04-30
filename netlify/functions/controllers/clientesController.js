@@ -1,31 +1,44 @@
 const { obtenerClientes, actualizarCliente } = require('../models/clientesModel');
 
-async function listarClientes(req, res) {
+async function handler(event) {
   try {
-    const clientes = await obtenerClientes();
-    res.status(200).json(clientes);
+    if (event.httpMethod === 'GET') {
+      const clientes = await obtenerClientes();
+      return {
+        statusCode: 200,
+        body: JSON.stringify(clientes),
+      };
+    }
+
+    if (event.httpMethod === 'PUT') {
+      const body = JSON.parse(event.body);
+      const { id, ...nuevosDatos } = body;
+
+      if (!id) {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ error: 'Falta el ID del cliente' }),
+        };
+      }
+
+      const resultado = await actualizarCliente(id, nuevosDatos);
+      return {
+        statusCode: 200,
+        body: JSON.stringify(resultado),
+      };
+    }
+
+    return {
+      statusCode: 405,
+      body: JSON.stringify({ error: 'Método no permitido' }),
+    };
   } catch (error) {
-    res.status(500).json({ error: 'No se pudieron obtener los datos de clientes' });
+    console.error('Error en handler:', error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: 'Error interno del servidor' }),
+    };
   }
 }
 
-async function editarCliente(req, res) {
-  const { id } = req.params;
-  const nuevosDatos = req.body;
-
-  if (!id || !nuevosDatos) {
-    return res.status(400).json({ error: 'Faltan parámetros necesarios' });
-  }
-
-  try {
-    const resultado = await actualizarCliente(id, nuevosDatos);
-    res.status(200).json(resultado);
-  } catch (error) {
-    res.status(500).json({ error: 'No se pudo actualizar el cliente' });
-  }
-}
-
-module.exports = {
-  listarClientes,
-  editarCliente,
-};
+module.exports = { handler };
