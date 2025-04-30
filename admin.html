@@ -7,39 +7,48 @@
   <link rel="stylesheet" href="style.css" />
   <style>
     body {
-      font-family: sans-serif;
+      font-family: 'Segoe UI', sans-serif;
       margin: 0;
       padding: 1rem;
       background: #f4f4f4;
     }
     h1 {
-      color: #007bff;
       text-align: center;
-      font-size: 2rem;
-      margin-bottom: 1.5rem;
+      font-size: 2.2rem;
+      margin: 1rem 0 2rem;
+      color: #007bff;
     }
+
+    .tabla-wrapper {
+      overflow-x: auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+
     table {
       width: 100%;
+      min-width: 800px;
       border-collapse: collapse;
-      background: #fff;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      border-radius: 8px;
-      overflow-x: auto;
     }
+
     th, td {
       padding: 0.75rem;
-      border: 1px solid #ddd;
+      border: 1px solid #ccc;
       text-align: left;
       font-size: 14px;
     }
+
     th {
-      background-color: #007bff;
+      background: #007bff;
       color: white;
       text-transform: uppercase;
     }
+
     td {
-      background-color: #fafafa;
+      background: #fdfdfd;
     }
+
     input {
       width: 100%;
       box-sizing: border-box;
@@ -48,12 +57,15 @@
       border-radius: 4px;
       border: 1px solid #ccc;
     }
+
     input[data-campo="message"] {
-      height: 4rem;
+      height: 5rem;
     }
+
     .editable {
       background-color: #fffbe6;
     }
+
     .btn-guardar {
       background-color: #28a745;
       color: white;
@@ -63,75 +75,41 @@
       border-radius: 4px;
       cursor: pointer;
     }
+
     .btn-guardar:hover {
       background-color: #218838;
     }
 
-    /* Responsividad */
     @media (max-width: 768px) {
-      table, thead, tbody, th, td, tr {
-        display: block;
-      }
-
-      thead {
-        display: none;
-      }
-
-      tr {
-        margin-bottom: 1.5rem;
-        background: #fff;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 1rem;
-      }
-
-      td {
-        display: flex;
-        flex-direction: column;
-        padding: 0.5rem 0;
-        border: none;
-      }
-
-      td::before {
-        content: attr(data-label);
-        font-weight: bold;
-        margin-bottom: 0.25rem;
-        color: #333;
-        text-transform: capitalize;
-      }
-
-      input {
-        flex: 1;
-      }
-
       input[data-campo="message"] {
-        height: auto;
         min-height: 6rem;
       }
 
       .btn-guardar {
         width: 100%;
-        margin-top: 0.75rem;
       }
     }
   </style>
 </head>
 <body>
   <h1>Panel de Clientes - Route 593</h1>
-  <table id="tabla-clientes">
-    <thead>
-      <tr>
-        <th>Cédula</th>
-        <th>Teléfono</th>
-        <th>Ubicación</th>
-        <th>Urbanización</th>
-        <th>Destino</th>
-        <th>Mensaje</th>
-        <th>Acción</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+
+  <div class="tabla-wrapper">
+    <table id="tabla-clientes">
+      <thead>
+        <tr>
+          <th>Cédula</th>
+          <th>Teléfono</th>
+          <th>Ubicación</th>
+          <th>Urbanización</th>
+          <th>Destino</th>
+          <th>Mensaje</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
   <script>
     const API_URL = '/.netlify/functions/panelClientes';
@@ -148,7 +126,6 @@
 
           ['cedula', 'phone', 'ubicacion', 'urbanizacion', 'destino', 'message'].forEach(campo => {
             const celda = document.createElement('td');
-            celda.setAttribute('data-label', campo);
             const input = document.createElement('input');
             input.value = cliente[campo] || '';
             input.className = 'editable';
@@ -158,7 +135,6 @@
           });
 
           const celdaBoton = document.createElement('td');
-          celdaBoton.setAttribute('data-label', 'acción');
           const botonGuardar = document.createElement('button');
           botonGuardar.textContent = 'Guardar';
           botonGuardar.className = 'btn-guardar';
