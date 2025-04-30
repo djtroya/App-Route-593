@@ -1,1 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Clientes - Route 593</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 1rem;
+      background: #f4f4f4;
+    }
+    h1 {
+      color: #333;
+      text-align: center;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      background: white;
+    }
+    th, td {
+      padding: 0.75rem;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+    th {
+      background: #333;
+      color: white;
+    }
+    input, button {
+      padding: 0.5rem;
+      margin: 0.25rem;
+    }
+    .editable {
+      background-color: #ffffdd;
+    }
+    .btn-guardar {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-guardar:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+  <h1>Panel de Clientes - Route 593</h1>
+  <table id="tabla-clientes">
+    <thead>
+      <tr>
+        <th>Cédula</th>
+        <th>Número</th>
+        <th>Ubicación</th>
+        <th>Urbanización</th>
+        <th>Destino</th>
+        <th>Mensaje</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
+  <script>
+    const API = '/.netlify/functions/clientes';
+
+    async function cargarClientes() {
+      const res = await fetch(API);
+      const data = await res.json();
+      const tbody = document.querySelector('#tabla-clientes tbody');
+      tbody.innerHTML = '';
+
+      data.forEach(cliente => {
+        const fila = document.createElement('tr');
+
+        ['cedula', 'numero', 'ubicacion', 'urbanizacion', 'destino', 'mensaje'].forEach(campo => {
+          const celda = document.createElement('td');
+          const input = document.createElement('input');
+          input.value = cliente[campo] || '';
+          input.className = 'editable';
+          input.dataset.campo = campo;
+          celda.appendChild(input);
+          fila.appendChild(celda);
+        });
+
+        const celdaBoton = document.createElement('td');
+        const botonGuardar = document.createElement('button');
+        botonGuardar.textContent = 'Guardar';
+        botonGuardar.className = 'btn-guardar';
+        botonGuardar.onclick = () => guardarCambios(cliente.id, fila);
+        celdaBoton.appendChild(botonGuardar);
+        fila.appendChild(celdaBoton);
+
+        tbody.appendChild(fila);
+      });
+    }
+
+    async function guardarCambios(id, fila) {
+      const datosActualizados = {};
+      fila.querySelectorAll('input').forEach(input => {
+        datosActualizados[input.dataset.campo] = input.value;
+      });
+
+      const res = await fetch(API, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, ...datosActualizados })
+      });
+
+      if (res.ok) {
+        alert('Cambios guardados.');
+      } else {
+        alert('Error al guardar.');
+      }
+    }
+
+    cargarClientes();
+  </script>
+</body>
+</html>
