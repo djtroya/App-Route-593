@@ -68,4 +68,12 @@ input {
   input {
     font-size: 14px;
   }
+  .buscador {
+  width: 100%;
+  padding: 0.75rem;
+  margin: 1rem 0;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  }
 }
