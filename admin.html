@@ -9,6 +9,10 @@
 <body>
   <div class="container">
     <h1>Panel de Clientes - Route 593</h1>
+
+    <!-- Campo de búsqueda -->
+    <input type="text" id="buscador" placeholder="Buscar por cédula, teléfono, ubicación..." class="buscador"/>
+
     <div class="tabla-scroll">
       <table id="tabla-clientes">
         <thead>
@@ -89,6 +93,17 @@
         console.error(err);
       }
     }
+
+    // Filtro en tiempo real
+    document.addEventListener('input', function (e) {
+      if (e.target.id === 'buscador') {
+        const texto = e.target.value.toLowerCase();
+        document.querySelectorAll('#tabla-clientes tbody tr').forEach(fila => {
+          const contenido = fila.textContent.toLowerCase();
+          fila.style.display = contenido.includes(texto) ? '' : 'none';
+        });
+      }
+    });
 
     cargarClientes();
   </script>
