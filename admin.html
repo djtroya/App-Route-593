@@ -64,6 +64,9 @@
 
           tbody.appendChild(fila);
         });
+
+        activarFiltro(); // Activamos el buscador después de cargar los datos
+
       } catch (err) {
         alert('Error al cargar los datos.');
         console.error(err);
@@ -94,16 +97,18 @@
       }
     }
 
-    // Filtro en tiempo real
-    document.addEventListener('input', function (e) {
-      if (e.target.id === 'buscador') {
-        const texto = e.target.value.toLowerCase();
+    function activarFiltro() {
+      const inputBuscador = document.getElementById('buscador');
+      inputBuscador.addEventListener('input', () => {
+        const texto = inputBuscador.value.toLowerCase();
         document.querySelectorAll('#tabla-clientes tbody tr').forEach(fila => {
-          const contenido = fila.textContent.toLowerCase();
+          const contenido = Array.from(fila.querySelectorAll('input'))
+            .map(input => input.value.toLowerCase())
+            .join(' ');
           fila.style.display = contenido.includes(texto) ? '' : 'none';
         });
-      }
-    });
+      });
+    }
 
     cargarClientes();
   </script>
