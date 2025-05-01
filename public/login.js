@@ -1,16 +1,27 @@
 // /public/js/login.js
 const loginForm = document.getElementById('login-form');
-const claveInput = document.getElementById('clave');
-const CLAVE_SECRETA = 'ruta593admin'; // Clave de acceso para el login
 
-loginForm.addEventListener('submit', (e) => {
+loginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const clave = claveInput.value.trim();
-  
-  if (clave === CLAVE_SECRETA) {
-    // Si la clave es correcta, redirigimos al admin
-    window.location.href = '/public/views/admin.html'; 
-  } else {
-    alert('Clave incorrecta');
+
+  const clave = document.getElementById('clave').value.trim();
+
+  try {
+    const res = await fetch('/.netlify/functions/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ clave })
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      window.location.href = data.redirect;
+    } else {
+      alert(data.message || 'Clave incorrecta');
+    }
+  } catch (err) {
+    alert('Error de conexión con el servidor');
+    console.error(err);
   }
 });
