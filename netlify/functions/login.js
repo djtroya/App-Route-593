@@ -1,19 +1,29 @@
+// /netlify/functions/login.js
 exports.handler = async (event) => {
   const { usuario, clave } = JSON.parse(event.body || '{}');
 
-  // Simulación de credenciales válidas (puedes mejorar esto con Supabase luego)
   const USUARIO_VALIDO = 'admin';
   const CLAVE_VALIDA = 'ruta593admin';
 
   if (usuario === USUARIO_VALIDO && clave === CLAVE_VALIDA) {
+    // Simulación de token (puedes usar JWT después)
+    const token = 'token_simulado_route593';
+
     return {
       statusCode: 200,
-      body: JSON.stringify({ success: true, redirect: '/admin.html' })
+      body: JSON.stringify({
+        success: true,
+        token,
+        redirect: '/admin.html'
+      })
     };
   } else {
     return {
       statusCode: 401,
-      body: JSON.stringify({ success: false, message: 'Credenciales incorrectas' })
+      body: JSON.stringify({
+        success: false,
+        message: 'Credenciales incorrectas'
+      })
     };
   }
 };
