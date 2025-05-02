@@ -34,9 +34,28 @@
   <script>
     const API_URL = '/.netlify/functions/panelClientes';
 
+    // Protección con token
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      window.location.href = 'login.html';
+    }
+
     async function cargarClientes() {
       try {
-        const res = await fetch(API_URL);
+        const res = await fetch(API_URL, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (res.status === 401) {
+          alert('Sesión expirada o no autorizada.');
+          localStorage.removeItem('authToken');
+          window.location.href = 'login.html';
+          return;
+        }
+
         const data = await res.json();
         const tbody = document.querySelector('#tabla-clientes tbody');
         tbody.innerHTML = '';
@@ -65,7 +84,7 @@
           tbody.appendChild(fila);
         });
 
-        activarFiltro(); // Activamos el buscador después de cargar los datos
+        activarFiltro();
 
       } catch (err) {
         alert('Error al cargar los datos.');
@@ -82,7 +101,10 @@
       try {
         const res = await fetch(API_URL, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
           body: JSON.stringify({ id, ...datos })
         });
 
