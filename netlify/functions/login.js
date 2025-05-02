@@ -1,9 +1,10 @@
 // /netlify/functions/login.js
+
 exports.handler = async (event) => {
   const { usuario, clave } = JSON.parse(event.body || '{}');
 
-  const USUARIO_VALIDO = 'admin';
-  const CLAVE_VALIDA = 'ruta593admin';
+  const USUARIO_VALIDO = process.env.ADMIN_USER;
+  const CLAVE_VALIDA = process.env.ADMIN_PASSWORD;
 
   if (usuario === USUARIO_VALIDO && clave === CLAVE_VALIDA) {
     // Simulación de token (puedes usar JWT después)
