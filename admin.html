@@ -8,7 +8,10 @@
 </head>
 <body>
   <div class="container">
-    <h1>Panel de Clientes - Route 593</h1>
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+      <h1 style="margin: 0 auto;">Panel de Clientes - Route 593</h1>
+      <button id="cerrarSesion" style="margin: 10px;">Cerrar sesión</button>
+    </div>
 
     <!-- Campo de búsqueda -->
     <input type="text" id="buscador" placeholder="Buscar por cédula, teléfono, ubicación..." class="buscador"/>
@@ -33,12 +36,16 @@
 
   <script>
     const API_URL = '/.netlify/functions/panelClientes';
-
-    // Protección con token
     const token = localStorage.getItem('authToken');
+
     if (!token) {
       window.location.href = 'login.html';
     }
+
+    document.getElementById('cerrarSesion').addEventListener('click', () => {
+      localStorage.removeItem('authToken');
+      window.location.href = 'login.html';
+    });
 
     async function cargarClientes() {
       try {
