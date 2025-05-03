@@ -76,4 +76,55 @@ input {
   border: 1px solid #ccc;
   border-radius: 8px;
   }
+  /* === ESTILOS LOGIN === */
+.login-wrapper {
+  max-width: 400px;
+  margin: 80px auto;
+  padding: 2rem;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+.login-wrapper h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+.login-wrapper form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.login-wrapper input[type="password"] {
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.login-wrapper button[type="submit"] {
+  background-color: #333;
+  color: white;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.login-wrapper button[type="submit"]:hover {
+  background-color: #555;
+}
+
+/* Responsivo */
+@media (max-width: 480px) {
+  .login-wrapper {
+    margin: 40px 1rem;
+    padding: 1.5rem;
+  }
+}
 }
