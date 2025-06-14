@@ -84,6 +84,10 @@ exports.handler = async (event) => {
         
       case 5:
         if (msg.toLowerCase() === 'sí') {
+          // Asegurarse de que el número esté incluido
+          estado.datos.numero = numero;
+          estado.datos.mensaje = msg;
+
           const { error: insertError } = await supabase
             .from('clientes')
             .insert([estado.datos]);
