@@ -83,10 +83,10 @@ exports.handler = async (event) => {
         return responder(`Resumen:\nCédula: ${estado.datos.cedula}\nUbicación: ${estado.datos.ubicacion}\nUrbanización: ${estado.datos.urbanizacion}\nDestino: ${estado.datos.destino}\n\n¿Confirmas el viaje? Responde "sí" o "no".`);
         
       case 5:
-        if (msg.toLowerCase() === 'sí') {
+        if (msg.toLowerCase() === 'si') {
           // Asegurarse de que el número esté incluido
           estado.datos.numero = numero;
-          estado.datos.mensaje = msg;
+          estado.datos.message = msg;
 
           const { error: insertError } = await supabase
             .from('clientes')
