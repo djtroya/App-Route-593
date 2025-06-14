@@ -43,7 +43,7 @@ exports.handler = async (event) => {
       estado = {
         numero,
         paso: 1,
-        datos: { numero, app, sender },
+        datos: { app, sender, phone },
       };
       await supabase.from('conversaciones').insert([estado]);
     }
@@ -81,16 +81,24 @@ exports.handler = async (event) => {
           .eq('numero', numero);
 
         return responder(`Resumen:\nCédula: ${estado.datos.cedula}\nUbicación: ${estado.datos.ubicacion}\nUrbanización: ${estado.datos.urbanizacion}\nDestino: ${estado.datos.destino}\n\n¿Confirmas el viaje? Responde "sí" o "no".`);
-        
+
       case 5:
-        if (msg.toLowerCase() === 'si') {
-          // Asegurarse de que el número esté incluido
-          estado.datos.numero = numero;
-          estado.datos.message = msg;
+        if (['si', 'sí'].includes(msg.toLowerCase())) {
+          const cliente = {
+            cedula: estado.datos.cedula,
+            ubicacion: estado.datos.ubicacion,
+            urbanizacion: estado.datos.urbanizacion,
+            destino: estado.datos.destino,
+            message: msg,
+            phone: phone,
+            sender: sender,
+            app: app,
+            estado: 'pendiente'
+          };
 
           const { error: insertError } = await supabase
             .from('clientes')
-            .insert([estado.datos]);
+            .insert([cliente]);
 
           if (insertError) {
             console.error('Error al guardar en clientes:', insertError);
